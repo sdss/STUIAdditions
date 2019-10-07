@@ -1,4 +1,4 @@
-''' Elena Malanushenko  01/30/2011
+""" Elena Malanushenko  01/30/2011
 script to gather information for night log
 
 History: 
@@ -21,7 +21,7 @@ some day in the past:  added 4th window for hartmann output.
 2019-10-5 DG&EM: Replaced updateBossState with updateMangaState that correctly
    tracks whether or not the exposure is a new manga exposure and writes to log
 2019-10-6 DG: Rolled back previous changes by commenting the necessary lines
-'''
+"""
 
 import RO.Wdg
 import TUI.Models
@@ -34,8 +34,9 @@ class ScriptClass(object,):
         sr.debug = False
         self.sr = sr
         self.name="-logSupport-3-"
+        print(self.name)
         width=80 ; height=5
-
+        
         #resizeable window-1
         sr.master.winfo_toplevel().wm_resizable(True, True)
         
@@ -333,3 +334,21 @@ class ScriptClass(object,):
       ss1="(%3.0f) " % (float(guideOff2))
       ss2="(%2.0f,%2.0f,%2.0f) " % (float(calibOff0), float(calibOff1), float(calibOff2))
       ss="%s %s %5.1f %4.1f %6.1f %s %s %s %5.3f %s" % \
+          (tm,cart, az, alt, rot, ss0, ss1, ss2, float(guideRMS),atm)
+      self.logWdg1.addMsg("%s" % (ss), tags=["b","cur"])
+      
+      # focus
+      ss1="%s %s %8.6f %s %s %s" % (tm,cart,scale,primOr,secOr,secFoc)
+      ss2=" %6.1f  %4.1f  %5.1f  %s  %s  %3.1f %s"  %  (az,alt, airT, wind, dir,fwhm,atm)
+      ss=ss1+ss2
+      self.logWdg2.addMsg("%s" % (ss), tags=["g","cur"])
+      
+      # weather
+      ss1="%s %s %5.1f %5.1f %5.1f  %s"  % (tm, cart, airT, dp, diff, humid,)
+      ss2="   %s  %s  %s  %5.1f  %4i  %3.1f %s" % (wind,dir, dustb, irsc, irscmean,fwhm,atm)
+      ss=ss1+ss2      
+      self.logWdg3.addMsg("%s " % (ss), tags=["cur"] )
+
+    def run(self,sr):
+       self.record(sr,"")
+       self.print_hartmann_to_log()
