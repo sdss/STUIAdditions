@@ -56,14 +56,12 @@ class ScriptClass(object, ):
 
         # log3  -- weather
         self.logWdg3 = RO.Wdg.LogWdg(master=sr.master, width=width,
-                                     height=height, helpText="Weather",
-                                     relief="sunken", bd=2)
+                                     height=height, helpText="Weather", relief="sunken", bd=2)
         self.logWdg3.grid(row=2, column=0, sticky="nsew")
 
         # log4  -- hartmann
         self.logWdg4 = RO.Wdg.LogWdg(master=sr.master, width=width,
-                                     height=height, helpText="Hartman",
-                                     relief="sunken", bd=2)
+                                     height=height, helpText="Hartman", relief="sunken", bd=2)
         self.logWdg4.grid(row=3, column=0, sticky="nsew")
 
         # resizeable window-2
@@ -166,7 +164,7 @@ class ScriptClass(object, ):
         self.sopModel = TUI.Models.getModel('sop')
         # Inits a variable used later
         self.manga_seq_i = self.sopModel.doMangaSequence_ditherSeq[1]
-        self.manga_seq_i = self.sopModel.doApogeeMangaSequence_ditherSeq[1]
+        self.ap_manga_seq_i = self.sopModel.doApogeeMangaSequence_ditherSeq[1]
         # If MaNGA is leading, this will be called
         self.sopModel.doMangaSequence_ditherSeq.addCallback(
             self.updateMangaState, callNow=True)
@@ -287,10 +285,10 @@ class ScriptClass(object, ):
 
     def updateApogeeMangaState(self, keyVar):
         if not keyVar.isGenuine: return
-        if keyVar[1] != self.manga_seq_i:
+        if keyVar[1] != self.ap_manga_seq_i:
             sr = self.sr
             self.record(sr, "MaStars")
-            self.manga_seq_i = keyVar[1]
+            self.ap_manga_seq_i = keyVar[1]
 
     def getTAITimeStr(self, ):
         #        return time.strftime("%H:%M:%S",
