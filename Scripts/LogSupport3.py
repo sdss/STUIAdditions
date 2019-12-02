@@ -102,7 +102,7 @@ class ScriptClass(object, ):
 
         self.logWdg1.addMsg("--- Offsets --- (arcsec) ", tags=["b", "cur"])
         self.logWdg1.addMsg('{:<5} {:<9} {:<6} {:<6} {:<6} {:<9}'
-                            ' {:<4} {:<10} {:<5} {:<6}'.format(
+                            ' {:<5} {:<10} {:<5} {:<6}'.format(
                                 'Time', 'Cart', 'Az', 'Alt', 'Rot', 'objOff',
                                 'guideRot', 'calibOff', 'guideRMS', 'mission'),
                             tags=["b", "cur"])
@@ -322,56 +322,57 @@ class ScriptClass(object, ):
 
     def record(self, sr, atm):
         tm = self.getTAITimeStr()
-        scale = sr.getKeyVar(self.tccModel.scaleFac, ind=0, defVal=1.0)
+        scale = float(sr.getKeyVar(self.tccModel.scaleFac, ind=0, defVal=1.0))
 
-        az = sr.getKeyVar(self.tccModel.axePos, ind=0, defVal=999)
-        alt = sr.getKeyVar(self.tccModel.axePos, ind=1, defVal=99)
-        rot = sr.getKeyVar(self.tccModel.axePos, ind=2, defVal=999)
+        az = float(sr.getKeyVar(self.tccModel.axePos, ind=0, defVal=999))
+        alt = float(sr.getKeyVar(self.tccModel.axePos, ind=1, defVal=99))
+        rot = float(sr.getKeyVar(self.tccModel.axePos, ind=2, defVal=999))
         cart = self.getCart(sr, )
 
-        primOr = self.fInt(sr.getKeyVar(self.tccModel.primOrient, ind=0,
-                                        defVal=9999), 5)
-        secOr = self.fInt(sr.getKeyVar(self.tccModel.secOrient, ind=0,
-                                       defVal=9999), 5)
-        secFoc = self.fInt(sr.getKeyVar(self.tccModel.secFocus, ind=0,
-                                        defVal=9999), 4)
+        primOr = int(sr.getKeyVar(self.tccModel.primOrient, ind=0,
+                                  defVal=9999))
+        secOr = int(sr.getKeyVar(self.tccModel.secOrient, ind=0,
+                                 defVal=9999))
+        secFoc = int(sr.getKeyVar(self.tccModel.secFocus, ind=0,
+                                  defVal=9999))
 
-        def ffsec(n):
-            if n is None:
-                return "%5s" % "n/a"  # 999.9"
-            else:
-                return "%5.1f" % (n * 3600)
+        # def float(n):
+        #     if n is None:
+        #         return "%5s" % "n/a"  # 999.9"
+        #     else:
+        #         return "%5.1f" % (n * 3600)
 
-        def ffsecS(n):
-            if n is None:
-                return "%4s" % "n/a"
-            else:
-                return "%4.1f" % (n * 3600)
+        # def ffsecS(n):
+        #     if n is None:
+        #         return "%4s" % "n/a"
+        #     else:
+        #         return "%4.1f" % (n * 3600)
         # All offsets *3600
-        objOff0 = ffsec(RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[0]))
-        objOff1 = ffsec(RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[1]))
+        objOff0 = float(RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[0]))
+        objOff1 = float(RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[1]))
 
-        guideOff0 = ffsec(RO.CnvUtil.posFromPVT(self.tccModel.guideOff[0]))
-        guideOff1 = ffsec(RO.CnvUtil.posFromPVT(self.tccModel.guideOff[1]))
-        guideOff2 = ffsec(RO.CnvUtil.posFromPVT(self.tccModel.guideOff[2]))
+        guideOff0 = float(RO.CnvUtil.posFromPVT(self.tccModel.guideOff[0]))
+        guideOff1 = float(RO.CnvUtil.posFromPVT(self.tccModel.guideOff[1]))
+        guideOff2 = float(RO.CnvUtil.posFromPVT(self.tccModel.guideOff[2]))
 
-        calibOff0 = ffsec(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[0]))
-        calibOff1 = ffsec(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[1]))
-        calibOff2 = ffsecS(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[2]))
+        calibOff0 = float(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[0]))
+        calibOff1 = float(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[1]))
+        calibOff2 = float(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[2]))
 
         # rotOff = RO.CnvUtil.posFromPVT(self.tccModel.guideOff[2])
 
-        fwhm = sr.getKeyVar(self.guiderModel.seeing, ind=0, defVal=99.9)
-        guideRMS = sr.getKeyVar(self.guiderModel.guideRMS, ind=1, defVal=99.999)
+        fwhm = float(sr.getKeyVar(self.guiderModel.seeing, ind=0, defVal=99.9))
+        guideRMS = float(sr.getKeyVar(self.guiderModel.guideRMS, ind=1,
+                                      defVal=99.999))
 
-        airT = sr.getKeyVar(self.apoModel.airTempPT, ind=0, defVal=-99)
-        dir = self.fInt(sr.getKeyVar(self.apoModel.windd, ind=0, defVal=-99), 3)
-        wind = self.fInt(sr.getKeyVar(self.apoModel.winds, ind=0, defVal=99), 2)
+        airT = float(sr.getKeyVar(self.apoModel.airTempPT, ind=0, defVal=-99))
+        direc = int(sr.getKeyVar(self.apoModel.windd, ind=0, defVal=-99), 3)
+        wind = int(sr.getKeyVar(self.apoModel.winds, ind=0, defVal=99), 2)
         dp = sr.getKeyVar(self.apoModel.dpTempPT, ind=0, defVal=-99)
-        humid = self.fInt(sr.getKeyVar(self.apoModel.humidPT, ind=0,
-                                       defVal=999), 3)
-        dustb = self.fInt(sr.getKeyVar(self.apoModel.dustb, ind=0,
-                                       defVal=9999), 5)
+        humid = int(sr.getKeyVar(self.apoModel.humidPT, ind=0,
+                                 defVal=999), 3)
+        dustb = int(sr.getKeyVar(self.apoModel.dustb, ind=0,
+                                 defVal=9999), 5)
         #   dustb="%5s" % (sr.getKeyVar(self.apoModel.dustb, ind=0,
         #   defVal="n/a"))
 
@@ -399,12 +400,12 @@ class ScriptClass(object, ):
                             ' {:<3.0f}'
                             ' {:<4.1f}'.format(tm, cart, (scale-1)*1e6, primOr,
                                                secOr, secFoc, az, alt, airT,
-                                               wind, dir, fwhm),
+                                               wind, direc, fwhm),
                             tags=["g", "cur"])
 
         # weather
         ss1 = "%s %s %5.1f %5.1f %5.1f  %s" % (tm, cart, airT, dp, diff, humid,)
-        ss2 = "   %s  %s  %s  %5.1f  %4i  %3.1f %s" % (wind, dir, dustb, irsc,
+        ss2 = "   %s  %s  %s  %5.1f  %4i  %3.1f %s" % (wind, direc, dustb, irsc,
                                                        irscmean, fwhm, atm)
         ss = ss1 + ss2
         self.logWdg3.addMsg("%s " % ss, tags=["cur"])
