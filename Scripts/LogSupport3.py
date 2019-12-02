@@ -45,23 +45,26 @@ class ScriptClass(object, ):
         sr.master.winfo_toplevel().wm_resizable(True, True)
 
         # log1  - offset
-        self.logWdg1 = RO.Wdg.LogWdg(master=sr.master, width=width, height=height,
-                                     helpText="Offset", )
+        self.logWdg1 = RO.Wdg.LogWdg(master=sr.master, width=width,
+                                     height=height, helpText="Offset", )
         self.logWdg1.grid(row=0, column=0, sticky="news")
 
         # log2  - focus
-        self.logWdg2 = RO.Wdg.LogWdg(master=sr.master, width=width, height=height, helpText="Focus",
+        self.logWdg2 = RO.Wdg.LogWdg(master=sr.master, width=width,
+                                     height=height, helpText="Focus",
                                      relief="sunken", bd=2, )
         self.logWdg2.grid(row=1, column=0, sticky="nsew")
 
         # log3  -- weather
         self.logWdg3 = RO.Wdg.LogWdg(master=sr.master, width=width,
-                                     height=height, helpText="Weather", relief="sunken", bd=2)
+                                     height=height, helpText="Weather",
+                                     relief="sunken", bd=2)
         self.logWdg3.grid(row=2, column=0, sticky="nsew")
 
         # log4  -- hartmann
         self.logWdg4 = RO.Wdg.LogWdg(master=sr.master, width=width,
-                                     height=height, helpText="Hartman", relief="sunken", bd=2)
+                                     height=height, helpText="Hartman",
+                                     relief="sunken", bd=2)
         self.logWdg4.grid(row=3, column=0, sticky="nsew")
 
         # resizeable window-2
@@ -97,17 +100,15 @@ class ScriptClass(object, ):
         dashes = "%s" % (width * "-")
 
         self.logWdg1.addMsg("--- Offsets --- (arcsec) ", tags=["b", "cur"])
-        ssoff = " objArcOff  guideRot calibOff   guideRMS"
-        # ss = "Time %s Inst %s Az    Alt   Rot %s" % (2 * s, 3 * s, ssoff)
-        ss = '{:6}{:9}{:6}{:5}{:5}{:8}{:9}{:10}{:9}{:5}'.format(
-            'Time', 'Inst', 'Az', 'Alt', 'Rot', 'objOff', 'guideRot',
-            'calibOff', 'guideRMS', 'mission')
-        self.logWdg1.addMsg("%s" % ss, tags=["b", "cur"])
+        self.logWdg1.addMsg('{:<5} {:<8} {:<4} {:<4} {:<5} {:<9} {:<4} {:<10}'
+                            '{:<5} {:<6}'.format('Time', 'Inst', 'Az', 'Alt',
+                                                 'Rot', 'objOff', 'guideRot',
+                                                 'calibOff', 'guideRMS',
+                                                 'mission'),
+                            tags=["b", "cur"])
         self.logWdg1.addMsg("%s" % dashes, tags=["b", "cur"])
 
         self.logWdg2.addMsg("--- Focus ---", tags=["g", "cur"])
-        # ss = ("Time    Inst     Scale    M1    M2  Focus   Az   Alt   Temp Wind"
-        #       "Dir <fwhm>")
         ss = '{:6}{:9}{:6}{:5}{:5}{:8}{:9}{:10}{:9}{:5}'.format(
             'Time', 'Inst', 'Scale', 'M1', 'M2', 'Focus', 'Az', 'Alt',
             'Temp', 'Wind', 'Dir', 'FWHM')
@@ -130,8 +131,8 @@ class ScriptClass(object, ):
 
         self.bossModel = TUI.Models.getModel("boss")
         self.expState = self.bossModel.exposureState[0]
-        self.bossModel.exposureState.addCallback(self.updateBossState,
-                                                 callNow=True)
+        # self.bossModel.exposureState.addCallback(self.updateBossState,
+        #                                          callNow=True)
         self.apogeeState = self.apogeeModel.exposureWroteSummary[0]
         self.apogeeModel.exposureWroteSummary.addCallback(
             self.updateApogeeExpos, callNow=True)
@@ -141,7 +142,7 @@ class ScriptClass(object, ):
         self.cmdsModel.CmdDone.addCallback(self.hartEnd, callNow=False)
         self.cartHart = " x-xxxxA"
 
-        self.hartInfo = ["?"] * 8
+        self.hartInfo = [0] * 8
 
         self.hartmannModel.r1PistonMove.addCallback(self.r1PistonMoveFun,
                                                     callNow=False)
@@ -215,7 +216,8 @@ class ScriptClass(object, ):
     def hartStart(self, keyVar):
         if not keyVar.isGenuine:
             return
-            # q1=(keyVar[4]=="hartmann")  and (keyVar[6]=="collimate ignoreResiduals")
+            # q1=(keyVar[4]=="hartmann")
+            # and (keyVar[6]=="collimate ignoreResiduals")
         q1 = (keyVar[4] == "hartmann") and ("collimate" in keyVar[6])
         q2 = (keyVar[4] == "sop") and (keyVar[6] == "collimateBoss")
         if q1 or q2:
@@ -239,9 +241,11 @@ class ScriptClass(object, ):
         spRes = self.hartInfo[6]
         spTemp = self.bossModel.sp1Temp[0]
         try:
-            ss2 = "%5i %5.1f %5i %5.1f %4.1f" % (rPiston, bRing, spAvMove, spRes, spTemp)
+            ss2 = "%5i %5.1f %5i %5.1f %4.1f" % (rPiston, bRing, spAvMove,
+                                                 spRes, spTemp)
         except ValueError:
-            ss2 = "%5s %5s %5s %5s %4s" % (rPiston, bRing, spAvMove, spRes, spTemp)
+            ss2 = "%5s %5s %5s %5s %4s" % (rPiston, bRing, spAvMove, spRes,
+                                           spTemp)
 
         rPiston = self.hartInfo[1]
         bRing = self.hartInfo[3]
@@ -267,24 +271,27 @@ class ScriptClass(object, ):
                 self.record(sr, "APOGEE")
                 self.apogeeState = keyVar[0]
 
-    def updateBossState(self, keyVar):
-        if not keyVar.isGenuine:
-            return
-        if keyVar[0] != self.expState:
-            if keyVar[0] == "INTEGRATING" and keyVar[1] == 900.00:
-                sr = self.sr
-                self.record(sr, "BOSS")
-            self.expState = keyVar[0]
+    # Some old code we do not need
+    # def updateBossState(self, keyVar):
+    #     if not keyVar.isGenuine:
+    #         return
+    #     if keyVar[0] != self.expState:
+    #         if keyVar[0] == "INTEGRATING" and keyVar[1] == 900.00:
+    #             sr = self.sr
+    #             self.record(sr, "BOSS")
+    #         self.expState = keyVar[0]
 
     def updateMangaState(self, keyVar):
-        if not keyVar.isGenuine: return
+        if not keyVar.isGenuine:
+            return
         if keyVar[1] != self.manga_seq_i:
             sr = self.sr
             self.record(sr, "MaNGA")
             self.manga_seq_i = keyVar[1]
 
     def updateApogeeMangaState(self, keyVar):
-        if not keyVar.isGenuine: return
+        if not keyVar.isGenuine:
+            return
         if keyVar[1] != self.ap_manga_seq_i:
             sr = self.sr
             self.record(sr, "MaStars")
@@ -292,7 +299,8 @@ class ScriptClass(object, ):
 
     def getTAITimeStr(self, ):
         #        return time.strftime("%H:%M:%S",
-        #              time.gmtime(time.time() -  - RO.Astro.Tm.getUTCMinusTAI()))
+        #              time.gmtime(time.time() -
+        #              - RO.Astro.Tm.getUTCMinusTAI()))
         return time.strftime("%H:%M",
                              time.gmtime(time.time()
                                          - - RO.Astro.Tm.getUTCMinusTAI()))
@@ -335,17 +343,17 @@ class ScriptClass(object, ):
                 return "%4s" % "n/a"
             else:
                 return "%4.1f" % (n * 3600)
+        # All offsets *3600
+        objOff0 = ffsec(RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[0]))
+        objOff1 = ffsec(RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[1]))
 
-        objOff0 = ffsec(RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[0]))  # *3600.0
-        objOff1 = ffsec(RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[1]))  # *3600.0
+        guideOff0 = ffsec(RO.CnvUtil.posFromPVT(self.tccModel.guideOff[0]))
+        guideOff1 = ffsec(RO.CnvUtil.posFromPVT(self.tccModel.guideOff[1]))
+        guideOff2 = ffsec(RO.CnvUtil.posFromPVT(self.tccModel.guideOff[2]))
 
-        guideOff0 = ffsec(RO.CnvUtil.posFromPVT(self.tccModel.guideOff[0]))  # *3600.0
-        guideOff1 = ffsec(RO.CnvUtil.posFromPVT(self.tccModel.guideOff[1]))  # *3600.0
-        guideOff2 = ffsec(RO.CnvUtil.posFromPVT(self.tccModel.guideOff[2]))  # *3600.0
-
-        calibOff0 = ffsec(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[0]))  # *3600.0
-        calibOff1 = ffsec(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[1]))  # *3600.0
-        calibOff2 = ffsecS(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[2]))  # *3600.0
+        calibOff0 = ffsec(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[0]))
+        calibOff1 = ffsec(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[1]))
+        calibOff2 = ffsecS(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[2]))
 
         # rotOff = RO.CnvUtil.posFromPVT(self.tccModel.guideOff[2])
 
@@ -356,9 +364,12 @@ class ScriptClass(object, ):
         dir = self.fInt(sr.getKeyVar(self.apoModel.windd, ind=0, defVal=-99), 3)
         wind = self.fInt(sr.getKeyVar(self.apoModel.winds, ind=0, defVal=99), 2)
         dp = sr.getKeyVar(self.apoModel.dpTempPT, ind=0, defVal=-99)
-        humid = self.fInt(sr.getKeyVar(self.apoModel.humidPT, ind=0, defVal=999), 3)
-        dustb = self.fInt(sr.getKeyVar(self.apoModel.dustb, ind=0, defVal=9999), 5)
-        #   dustb="%5s" % (sr.getKeyVar(self.apoModel.dustb, ind=0, defVal="n/a"))
+        humid = self.fInt(sr.getKeyVar(self.apoModel.humidPT, ind=0,
+                                       defVal=999), 3)
+        dustb = self.fInt(sr.getKeyVar(self.apoModel.dustb, ind=0,
+                                       defVal=9999), 5)
+        #   dustb="%5s" % (sr.getKeyVar(self.apoModel.dustb, ind=0,
+        #   defVal="n/a"))
 
         irsc = sr.getKeyVar(self.apoModel.irscsd, ind=0, defVal=999)
         irscmean = sr.getKeyVar(self.apoModel.irscmean, ind=0, defVal=999)
@@ -367,12 +378,16 @@ class ScriptClass(object, ):
         val = sr.getKeyVar(self.apoModel.dpTempPT, ind=0, defVal=999)
         diff = at - val
 
-        ss0 = "(%3.0f,%3.0f) " % (float(objOff0), float(objOff1))
-        ss1 = "(%3.0f) " % (float(guideOff2))
-        ss2 = "(%2.0f,%2.0f,%2.0f) " % (float(calibOff0), float(calibOff1), float(calibOff2))
-        ss = "%s %s %5.1f %4.1f %6.1f %s %s %s %5.3f %s" % \
-             (tm, cart, az, alt, rot, ss0, ss1, ss2, float(guideRMS), atm)
-        self.logWdg1.addMsg("%s" % (ss), tags=["b", "cur"])
+        objOffs = "(%3.0f,%3.0f) " % (float(objOff0), float(objOff1))
+        calibOffs = "(%2.0f,%2.0f,%2.0f) " % (float(calibOff0),
+                                              float(calibOff1),
+                                              float(calibOff2))
+        self.logWdg1.addMsg('{:<5} {:<8} {:<4} {:<4} {:<5} {:<9} {:<4} {:<10}'
+                            ' {:<5} {:<6}'.format(tm, cart, az, alt, rot,
+                                                  objOffs, float(guideOff2),
+                                                  calibOffs,
+                                                  float(guideRMS), atm),
+                            tags=["b", "cur"])
 
         # focus
         ss1 = "%s %s %8.6f %s %s %s" % (tm, cart, scale, primOr, secOr, secFoc)
