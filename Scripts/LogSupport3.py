@@ -22,6 +22,7 @@ some day in the past:  added 4th window for hartmann output.
 2019-10-5 DG&EM: Replaced updateBossState with updateMangaState that correctly
    tracks whether or not the exposure is a new manga exposure and writes to log
 2019-10-6 DG: Rolled back previous changes by commenting the necessary lines
+2019-12-1 DG: Added a callback
 """
 
 import RO.Wdg
@@ -100,19 +101,23 @@ class ScriptClass(object, ):
         dashes = "%s" % (width * "-")
 
         self.logWdg1.addMsg("--- Offsets --- (arcsec) ", tags=["b", "cur"])
-        self.logWdg1.addMsg('{:<5} {:<9} {:+<6} {:+<6} {:+<6} {:<9}'
+        self.logWdg1.addMsg('{:<5} {:<9} {:<6} {:<6} {:<6} {:<9}'
                             ' {:<4} {:<10} {:<5} {:<6}'.format(
-                                'Time', 'Inst', 'Az', 'Alt', 'Rot', 'objOff',
+                                'Time', 'Cart', 'Az', 'Alt', 'Rot', 'objOff',
                                 'guideRot', 'calibOff', 'guideRMS', 'mission'),
                             tags=["b", "cur"])
         self.logWdg1.addMsg("%s" % dashes, tags=["b", "cur"])
 
         self.logWdg2.addMsg("--- Focus ---", tags=["g", "cur"])
-        ss = '{:<5} {:<9} {:6}{:5}{:5}{:8}{:9}{:10}{:9}{:5}'.format(
-            'Time', 'Inst', 'Scale', 'M1', 'M2', 'Focus', 'Az', 'Alt',
-            'Temp', 'Wind', 'Dir', 'FWHM')
 
-        self.logWdg2.addMsg("%s" % (ss,), tags=["g", "cur"])
+        self.logWdg2.addMsg('{:<5} {:<9} {:<5} {:<4} {:<4} {:<5} {:<6} {:<6}'
+                            '{:<5} {:<4} {:<3} {:<4}'.format('Time', 'Cart',
+                                                             'Scale', 'M1',
+                                                             'M2', 'Focus',
+                                                             'Az', 'Alt',
+                                                             'Temp', 'Wind',
+                                                             'Dir', 'FWHM'),
+                            tags=["g", "cur"])
         self.logWdg2.addMsg("%s" % dashes, tags=["g", "cur"])
 
         self.logWdg3.addMsg("--- Weather ---", tags=["cur"])
@@ -285,7 +290,7 @@ class ScriptClass(object, ):
             return
         if keyVar[1] != self.manga_seq_i:
             sr = self.sr
-            self.record(sr, "MaNGA")
+            self.record(sr, "MaStars")
             self.manga_seq_i = keyVar[1]
 
     def updateApogeeMangaState(self, keyVar):
@@ -293,7 +298,7 @@ class ScriptClass(object, ):
             return
         if keyVar[1] != self.ap_manga_seq_i:
             sr = self.sr
-            self.record(sr, "MaStars")
+            self.record(sr, "MaNGA")
             self.ap_manga_seq_i = keyVar[1]
 
     def getTAITimeStr(self, ):
@@ -381,7 +386,7 @@ class ScriptClass(object, ):
         calibOffs = "(%2.0f,%2.0f,%2.0f) " % (float(calibOff0),
                                               float(calibOff1),
                                               float(calibOff2))
-        self.logWdg1.addMsg('{:<5} {:<9} {:+<6.1f} {:+<6.1f} {:+<6.1f} {:<9}'
+        self.logWdg1.addMsg('{:<5} {:<9} {:<+6.1f} {:<+6.1f} {:<+6.1f} {:<9}'
                             ' {:<4} {:<10} {:<5} {:<6}'.format(
                                 tm, cart, az, alt, rot, objOffs,
                                 float(guideOff2), calibOffs, float(guideRMS),
@@ -389,16 +394,20 @@ class ScriptClass(object, ):
                             tags=["b", "cur"])
 
         # focus
-        ss1 = "%s %s %8.6f %s %s %s" % (tm, cart, scale, primOr, secOr, secFoc)
-        ss2 = " %6.1f  %4.1f  %5.1f  %s  %s  %3.1f %s" % (az, alt, airT, wind, dir, fwhm, atm)
-        ss = ss1 + ss2
-        self.logWdg2.addMsg("%s" % (ss), tags=["g", "cur"])
+        self.logWdg2.addMsg('{:<5} {:<9} {:<+5.1f} {:<+4.0f} {:<+4.0f}'
+                            ' {:<+5.0f} {:<+6.1f} {:<+6.1f} {:<+5.1f} {:<4.0f}'
+                            ' {:<3.0f}'
+                            ' {:<4.1f}'.format(tm, cart, (scale-1)*1e6, primOr,
+                                               secOr, secFoc, az, alt, airT,
+                                               wind, dir, fwhm),
+                            tags=["g", "cur"])
 
         # weather
         ss1 = "%s %s %5.1f %5.1f %5.1f  %s" % (tm, cart, airT, dp, diff, humid,)
-        ss2 = "   %s  %s  %s  %5.1f  %4i  %3.1f %s" % (wind, dir, dustb, irsc, irscmean, fwhm, atm)
+        ss2 = "   %s  %s  %s  %5.1f  %4i  %3.1f %s" % (wind, dir, dustb, irsc,
+                                                       irscmean, fwhm, atm)
         ss = ss1 + ss2
-        self.logWdg3.addMsg("%s " % (ss), tags=["cur"])
+        self.logWdg3.addMsg("%s " % ss, tags=["cur"])
 
     def run(self, sr):
         self.record(sr, "")
