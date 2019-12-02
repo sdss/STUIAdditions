@@ -329,12 +329,9 @@ class ScriptClass(object, ):
         rot = float(sr.getKeyVar(self.tccModel.axePos, ind=2, defVal=999))
         cart = self.getCart(sr, )
 
-        primOr = int(sr.getKeyVar(self.tccModel.primOrient, ind=0,
-                                  defVal=9999))
-        secOr = int(sr.getKeyVar(self.tccModel.secOrient, ind=0,
-                                 defVal=9999))
-        secFoc = int(sr.getKeyVar(self.tccModel.secFocus, ind=0,
-                                  defVal=9999))
+        primOr = int(sr.getKeyVar(self.tccModel.primOrient, ind=0, defVal=9999))
+        secOr = int(sr.getKeyVar(self.tccModel.secOrient, ind=0, defVal=9999))
+        secFoc = int(sr.getKeyVar(self.tccModel.secFocus, ind=0, defVal=9999))
 
         # def float(n):
         #     if n is None:
@@ -366,13 +363,11 @@ class ScriptClass(object, ):
                                       defVal=99.999))
 
         airT = float(sr.getKeyVar(self.apoModel.airTempPT, ind=0, defVal=-99))
-        direc = int(sr.getKeyVar(self.apoModel.windd, ind=0, defVal=-99), 3)
-        wind = int(sr.getKeyVar(self.apoModel.winds, ind=0, defVal=99), 2)
+        direc = int(sr.getKeyVar(self.apoModel.windd, ind=0, defVal=-99))
+        wind = int(sr.getKeyVar(self.apoModel.winds, ind=0, defVal=99))
         dp = sr.getKeyVar(self.apoModel.dpTempPT, ind=0, defVal=-99)
-        humid = int(sr.getKeyVar(self.apoModel.humidPT, ind=0,
-                                 defVal=999), 3)
-        dustb = int(sr.getKeyVar(self.apoModel.dustb, ind=0,
-                                 defVal=9999), 5)
+        humid = int(sr.getKeyVar(self.apoModel.humidPT, ind=0, defVal=999))
+        dustb = int(sr.getKeyVar(self.apoModel.dustb, ind=0, defVal=9999))
         #   dustb="%5s" % (sr.getKeyVar(self.apoModel.dustb, ind=0,
         #   defVal="n/a"))
 
