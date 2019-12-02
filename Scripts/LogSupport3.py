@@ -100,16 +100,15 @@ class ScriptClass(object, ):
         dashes = "%s" % (width * "-")
 
         self.logWdg1.addMsg("--- Offsets --- (arcsec) ", tags=["b", "cur"])
-        self.logWdg1.addMsg('{:<5} {:<8} {:<4} {:<4} {:<5} {:<9} {:<4} {:<10}'
-                            '{:<5} {:<6}'.format('Time', 'Inst', 'Az', 'Alt',
-                                                 'Rot', 'objOff', 'guideRot',
-                                                 'calibOff', 'guideRMS',
-                                                 'mission'),
+        self.logWdg1.addMsg('{:<5} {:<9} {:+<6} {:+<6} {:+<6} {:<9}'
+                            ' {:<4} {:<10} {:<5} {:<6}'.format(
+                                'Time', 'Inst', 'Az', 'Alt', 'Rot', 'objOff',
+                                'guideRot', 'calibOff', 'guideRMS', 'mission'),
                             tags=["b", "cur"])
         self.logWdg1.addMsg("%s" % dashes, tags=["b", "cur"])
 
         self.logWdg2.addMsg("--- Focus ---", tags=["g", "cur"])
-        ss = '{:6}{:9}{:6}{:5}{:5}{:8}{:9}{:10}{:9}{:5}'.format(
+        ss = '{:<5} {:<9} {:6}{:5}{:5}{:8}{:9}{:10}{:9}{:5}'.format(
             'Time', 'Inst', 'Scale', 'M1', 'M2', 'Focus', 'Az', 'Alt',
             'Temp', 'Wind', 'Dir', 'FWHM')
 
@@ -382,11 +381,11 @@ class ScriptClass(object, ):
         calibOffs = "(%2.0f,%2.0f,%2.0f) " % (float(calibOff0),
                                               float(calibOff1),
                                               float(calibOff2))
-        self.logWdg1.addMsg('{:<5} {:<8} {:<4} {:<4} {:<5} {:<9} {:<4} {:<10}'
-                            ' {:<5} {:<6}'.format(tm, cart, az, alt, rot,
-                                                  objOffs, float(guideOff2),
-                                                  calibOffs,
-                                                  float(guideRMS), atm),
+        self.logWdg1.addMsg('{:<5} {:<9} {:+<6.1f} {:+<6.1f} {:+<6.1f} {:<9}'
+                            ' {:<4} {:<10} {:<5} {:<6}'.format(
+                                tm, cart, az, alt, rot, objOffs,
+                                float(guideOff2), calibOffs, float(guideRMS),
+                                atm),
                             tags=["b", "cur"])
 
         # focus
