@@ -102,7 +102,7 @@ class ScriptClass(object, ):
 
         self.logWdg1.addMsg("--- Offsets --- (arcsec) ", tags=["b", "cur"])
         self.logWdg1.addMsg('{:<5} {:<9} {:<6} {:<4} {:<6} {:<9}'
-                            ' {:<8} {:<10} {:<8} {:<6}'.format(
+                            ' {:<9} {:<10} {:<8} {:<6}'.format(
             'Time', 'Cart', 'Az', 'Alt', 'Rot', 'objOff',
             'guideRot', 'calibOff', 'guideRMS', 'Mission'),
             tags=["b", "cur"])
@@ -111,22 +111,19 @@ class ScriptClass(object, ):
         self.logWdg2.addMsg("--- Focus ---", tags=["g", "cur"])
 
         self.logWdg2.addMsg('{:<5} {:<9} {:<6} {:<5} {:<5} {:<5} {:<6} {:<5}'
-                            '{:<5} {:<4} {:<3} {:<4}'.format('Time', 'Cart',
-                                                             'Scale', 'M1',
-                                                             'M2', 'Focus',
-                                                             'Az', 'Alt',
-                                                             'Temp', 'Wind',
-                                                             'Dir', 'FWHM'),
+                            ' {:<6} {:<4} {:<3}'
+                            ' {:<4}'.format('Time', 'Cart', 'Scale', 'M1', 'M2',
+                                            'Focus', 'Az', 'Alt', 'Temp',
+                                            'Wind', 'Dir', 'FWHM'),
                             tags=["g", "cur"])
         self.logWdg2.addMsg("%s" % dashes, tags=["g", "cur"])
 
         self.logWdg3.addMsg("--- Weather ---", tags=["cur"])
-        self.logWdg3.addMsg('{:<5} {:<9} {:<5} {:<5} {:<4} {:<5} {:<4} {:<6}'
-                            ' {:<8} {:<8} {:<8}'
-                            ' {:<7}'.format('Time', 'Cart', 'Temp', 'DP',
+        self.logWdg3.addMsg('{:<5} {:<9} {:<5} {:<5} {:<4} {:<5} {:<4} {:<3}'
+                            ' {:<6} {:<7} {:<5}'
+                            ''.format('Time', 'Cart', 'Temp', 'DP',
                                             'Diff', 'Humid', 'Wind', 'Dir',
-                                            '1umDst', 'IRSC Sig', 'IRSCm',
-                                            'Mission'),
+                                            '1umDst', 'IRSCSig', 'IRSCm'),
                             tags=["cur"])
         self.logWdg3.addMsg("%s" % dashes, tags=["cur"])
 
@@ -387,7 +384,7 @@ class ScriptClass(object, ):
                                               float(calibOff1),
                                               float(calibOff2))
         self.logWdg1.addMsg('{:<5} {:<9} {:<+6.1f} {:<4.1f} {:<+6.1f} {:<9}'
-                            ' {:<8.3E} {:<10} {:<8.3f}'
+                            ' {:<+8.3E} {:<10} {:<8.3f}'
                             ' {:<6}'.format(tm, cart, az, alt, rot, objOffs,
                                             guideOff2, calibOffs, guideRMS,
                                             atm), tags=["b", "cur"])
@@ -404,10 +401,9 @@ class ScriptClass(object, ):
 
         # weather
         self.logWdg3.addMsg('{:<5} {:<9} {:<+5.1f} {:<+5.1f} {:<4.1f} {:<5.0f}'
-                            ' {:<4.0f} {:<6.0f} {:<8} {:<8} {:<8}'
-                            ' {:<7}'.format(tm, cart, airT, dp, diff, humid,
-                                            wind, direc, dustb, irsc, irscmean,
-                                            atm),
+                            ' {:<4.0f} {:<3.0f} {:<6.0f} {:<7.1f} {:<5.1f}'
+                            ''.format(tm, cart, airT, dp, diff, humid,
+                                            wind, direc, dustb, irsc, irscmean),
                             tags=["cur"])
 
     def run(self, sr):
