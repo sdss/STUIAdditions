@@ -101,16 +101,16 @@ class ScriptClass(object, ):
         dashes = "%s" % (width * "-")
 
         self.logWdg1.addMsg("--- Offsets --- (arcsec) ", tags=["b", "cur"])
-        self.logWdg1.addMsg('{:<5} {:<9} {:<6} {:<6} {:<6} {:<9}'
-                            ' {:<5} {:<10} {:<5} {:<6}'.format(
-                                'Time', 'Cart', 'Az', 'Alt', 'Rot', 'objOff',
-                                'guideRot', 'calibOff', 'guideRMS', 'mission'),
-                            tags=["b", "cur"])
+        self.logWdg1.addMsg('{:<5} {:<9} {:<6} {:<4} {:<6} {:<9}'
+                            ' {:<8} {:<10} {:<8} {:<6}'.format(
+            'Time', 'Cart', 'Az', 'Alt', 'Rot', 'objOff',
+            'guideRot', 'calibOff', 'guideRMS', 'Mission'),
+            tags=["b", "cur"])
         self.logWdg1.addMsg("%s" % dashes, tags=["b", "cur"])
 
         self.logWdg2.addMsg("--- Focus ---", tags=["g", "cur"])
 
-        self.logWdg2.addMsg('{:<5} {:<9} {:<5} {:<4} {:<4} {:<5} {:<6} {:<6}'
+        self.logWdg2.addMsg('{:<5} {:<9} {:<6} {:<5} {:<5} {:<5} {:<6} {:<5}'
                             '{:<5} {:<4} {:<3} {:<4}'.format('Time', 'Cart',
                                                              'Scale', 'M1',
                                                              'M2', 'Focus',
@@ -121,9 +121,13 @@ class ScriptClass(object, ):
         self.logWdg2.addMsg("%s" % dashes, tags=["g", "cur"])
 
         self.logWdg3.addMsg("--- Weather ---", tags=["cur"])
-        ss = "Time %s Inst    Temp   DP   Dif  Humid Wind Dir Dust,1um IRSC  " \
-             "IRSCm FWHM" % (2 * s,)
-        self.logWdg3.addMsg("%s" % (ss,), tags=["cur"])
+        self.logWdg3.addMsg('{:<5} {:<9} {:<5} {:<5} {:<4} {:<5} {:<4} {:<6}'
+                            ' {:<8} {:<8} {:<8}'
+                            ' {:<7}'.format('Time', 'Cart', 'Temp', 'DP',
+                                            'Diff', 'Humid', 'Wind', 'Dir',
+                                            '1umDst', 'IRSC Sig', 'IRSCm',
+                                            'Mission'),
+                            tags=["cur"])
         self.logWdg3.addMsg("%s" % dashes, tags=["cur"])
 
         self.logWdg4.addMsg("--- Hartmann ---", tags=["cur", "c"])
@@ -290,7 +294,7 @@ class ScriptClass(object, ):
             return
         if keyVar[1] != self.manga_seq_i:
             sr = self.sr
-            self.record(sr, "MaStars")
+            self.record(sr, "MaNGA")
             self.manga_seq_i = keyVar[1]
 
     def updateApogeeMangaState(self, keyVar):
@@ -298,7 +302,7 @@ class ScriptClass(object, ):
             return
         if keyVar[1] != self.ap_manga_seq_i:
             sr = self.sr
-            self.record(sr, "MaNGA")
+            self.record(sr, "MaStar")
             self.ap_manga_seq_i = keyVar[1]
 
     def getTAITimeStr(self, ):
@@ -382,28 +386,29 @@ class ScriptClass(object, ):
         calibOffs = "(%2.0f,%2.0f,%2.0f) " % (float(calibOff0),
                                               float(calibOff1),
                                               float(calibOff2))
-        self.logWdg1.addMsg('{:<5} {:<9} {:<+6.1f} {:<+6.1f} {:<+6.1f} {:<9}'
-                            ' {:<4} {:<10} {:<5} {:<6}'.format(
-                                tm, cart, az, alt, rot, objOffs,
-                                float(guideOff2), calibOffs, float(guideRMS),
-                                atm),
-                            tags=["b", "cur"])
+        self.logWdg1.addMsg('{:<5} {:<9} {:<+6.1f} {:<4.1f} {:<+6.1f} {:<9}'
+                            ' {:<8.3E} {:<10} {:<8.3f}'
+                            ' {:<6}'.format(tm, cart, az, alt, rot, objOffs,
+                                            guideOff2, calibOffs, guideRMS,
+                                            atm), tags=["b", "cur"])
 
         # focus
-        self.logWdg2.addMsg('{:<5} {:<9} {:<+5.1f} {:<+4.0f} {:<+4.0f}'
-                            ' {:<+5.0f} {:<+6.1f} {:<+6.1f} {:<+5.1f} {:<4.0f}'
+        self.logWdg2.addMsg('{:<5} {:<9} {:<+6.1f} {:<+5.0f} {:<+5.0f}'
+                            ' {:<+5.0f} {:<+6.1f} {:<5.1f} {:<+5.1f} {:<4.0f}'
                             ' {:<3.0f}'
-                            ' {:<4.1f}'.format(tm, cart, (scale-1)*1e6, primOr,
+                            ' {:<4.1f}'.format(tm, cart, (scale - 1) * 1e6,
+                                               primOr,
                                                secOr, secFoc, az, alt, airT,
                                                wind, direc, fwhm),
                             tags=["g", "cur"])
 
         # weather
-        ss1 = "%s %s %5.1f %5.1f %5.1f  %s" % (tm, cart, airT, dp, diff, humid,)
-        ss2 = "   %s  %s  %s  %5.1f  %4i  %3.1f %s" % (wind, direc, dustb, irsc,
-                                                       irscmean, fwhm, atm)
-        ss = ss1 + ss2
-        self.logWdg3.addMsg("%s " % ss, tags=["cur"])
+        self.logWdg3.addMsg('{:<5} {:<9} {:<+5.1f} {:<+5.1f} {:<4.1f} {:<5.0f}'
+                            ' {:<4.0f} {:<6.0f} {:<8} {:<8} {:<8}'
+                            ' {:<7}'.format(tm, cart, airT, dp, diff, humid,
+                                            wind, direc, dustb, irsc, irscmean,
+                                            atm),
+                            tags=["cur"])
 
     def run(self, sr):
         self.record(sr, "")
