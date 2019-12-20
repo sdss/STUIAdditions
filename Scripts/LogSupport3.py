@@ -23,6 +23,7 @@ some day in the past:  added 4th window for hartmann output.
    tracks whether or not the exposure is a new manga exposure and writes to log
 2019-10-6 DG: Rolled back previous changes by commenting the necessary lines
 2019-12-1 DG: Added a callback
+2019-12-19 DG: Made a number of formatting changes for more stable results
 """
 
 import RO.Wdg
@@ -101,17 +102,17 @@ class ScriptClass(object, ):
         dashes = "%s" % (width * "-")
 
         self.logWdg1.addMsg("--- Offsets --- (arcsec) ", tags=["b", "cur"])
-        self.logWdg1.addMsg('{:<5} {:<9} {:<6} {:<4} {:<6} {:<9}'
-                            ' {:<9} {:<10} {:<8} {:<6}'.format(
+        self.logWdg1.addMsg('{:<5} {:<9} {:<6} {:<4} {:<6} {:<10}'
+                            ' {:<9} {:<10} {:<8}'.format(
             'Time', 'Cart', 'Az', 'Alt', 'Rot', 'objOff',
-            'guideRot', 'calibOff', 'guideRMS', 'Mission'),
+            'guideRot', 'calibOff', 'guideRMS'),
             tags=["b", "cur"])
         self.logWdg1.addMsg("%s" % dashes, tags=["b", "cur"])
 
         self.logWdg2.addMsg("--- Focus ---", tags=["g", "cur"])
 
         self.logWdg2.addMsg('{:<5} {:<9} {:<6} {:<5} {:<5} {:<5} {:<6} {:<5}'
-                            ' {:<6} {:<4} {:<3}'
+                            ' {:<5} {:<4} {:<3}'
                             ' {:<4}'.format('Time', 'Cart', 'Scale', 'M1', 'M2',
                                             'Focus', 'Az', 'Alt', 'Temp',
                                             'Wind', 'Dir', 'FWHM'),
@@ -130,9 +131,15 @@ class ScriptClass(object, ):
         self.logWdg4.addMsg("--- Hartmann ---", tags=["cur", "c"])
         ss = "Time    Inst         r1   b1  move1 b1pred Tsp1      r2   b2  " \
              "move2 b2pred Tsp2"
-        self.logWdg4.addMsg("%s" % ss, tags=["cur", "c"])
-        sline = "%s     %s    %s" % (14 * '-', 28 * "-", 28 * "-")
-        self.logWdg4.addMsg("%s" % sline, tags=["cur", "c"])
+        self.logWdg4.addMsg('{:<5} {:<9} {:<5} {:<5} {:<5} {:<7} {:<4} {:<5}'
+                            ' {:<5} {:<5} {:<7} {:<4}'
+                            ''.format('Time', 'Cart', 'R1', 'B1', 'Move1',
+                                      'B1Resid', 'TSP1', 'R2', 'B2', 'Move2',
+                                      'B2Resid', 'TSP2'),
+                            tags=["cur", "c"])
+        # sline = "%s     %s    %s" % (14 * '-', 28 * "-", 28 * "-")
+
+        self.logWdg4.addMsg("%s" % dashes, tags=["cur", "c"])
 
         self.bossModel = TUI.Models.getModel("boss")
         self.expState = self.bossModel.exposureState[0]
@@ -238,33 +245,52 @@ class ScriptClass(object, ):
 
     def print_hartmann_to_log(self):
         tm = self.getTAITimeStr()
+        cart = self.getCart(self.sr)
         ss1 = "%s %s   " % (tm, self.getCart(self.sr))
 
-        rPiston = self.hartInfo[0]
-        bRing = self.hartInfo[2]
-        spAvMove = self.hartInfo[4]
-        spRes = self.hartInfo[6]
-        spTemp = self.bossModel.sp1Temp[0]
-        try:
-            ss2 = "%5i %5.1f %5i %5.1f %4.1f" % (rPiston, bRing, spAvMove,
-                                                 spRes, spTemp)
-        except ValueError:
-            ss2 = "%5s %5s %5s %5s %4s" % (rPiston, bRing, spAvMove, spRes,
-                                           spTemp)
+        # rPiston = self.hartInfo[0]
+        # bRing = self.hartInfo[2]
+        # spAvMove = self.hartInfo[4]
+        # spRes = self.hartInfo[6]
+        # spTemp = self.bossModel.sp1Temp[0]
+        # try:
+        #     ss2 = "%5i %5.1f %5i %5.1f %4.1f" % (rPiston, bRing, spAvMove,
+        #                                          spRes, spTemp)
+        # except ValueError:
+        #     ss2 = "%5s %5s %5s %5s %4s" % (rPiston, bRing, spAvMove, spRes,
+        #                                    spTemp)
 
-        rPiston = self.hartInfo[1]
-        bRing = self.hartInfo[3]
-        spAvMove = self.hartInfo[5]
-        spRes = self.hartInfo[7]
-        spTemp = self.bossModel.sp2Temp[0]
+        # rPiston = self.hartInfo[1]
+        # bRing = self.hartInfo[3]
+        # spAvMove = self.hartInfo[5]
+        # spRes = self.hartInfo[7]
+        # spTemp = self.bossModel.sp2Temp[0]
+        # try:
+        #    ss3 = "%5i %5.1f %5i %5.1f %4.1f" % (rPiston, bRing, spAvMove,
+        #                                         spRes, spTemp)
+        #except ValueError:
+        #    ss3 = "%5s %5s %5s %5s %4s" % (rPiston, bRing, spAvMove, spRes,
+        #                                   spTemp)
         try:
-            ss3 = "%5i %5.1f %5i %5.1f %4.1f" % (rPiston, bRing, spAvMove,
-                                                 spRes, spTemp)
+            hart_data = np.array(self.hartInfo).astype(float)
+            # self.logWdg4.addMsg("%s  %s    %s" % (ss1, ss2, ss3), tags=["c", "cur"])
+            self.logWdg4.addMsg('{:<5} {:<9} {:<5.0f} {:<+5.1f} {:<5.0f}'
+                                ' {:<7.1f}'
+                                ''.format(tm, cart, *hart_data[0::2])
+                                (' {:<4.1f}'.format(self.bossModel(sp1Temp[0])))
+                                (' {:<5.0f} {:<5.1f} {:<5.0f} {:<7.1f}'
+                                ''.format(*hart_data[1::2]))
+                                (' {:<4.1f}'.format(self.bossModel(
+                                    sp2Temp[0]))),
+                                tags=["cur", "c"])
         except ValueError:
-            ss3 = "%5s %5s %5s %5s %4s" % (rPiston, bRing, spAvMove, spRes,
-                                           spTemp)
-
-        self.logWdg4.addMsg("%s  %s    %s" % (ss1, ss2, ss3), tags=["c", "cur"])
+            self.logWdg4.addMsg('{:<5} {:<9} {:<5} {:<5} {:<5} {:<7}'
+                                ''.format(tm, cart, *hart_data[0::2])
+                                (' {:<4}'.fomrat(self.bossModel(sp1Temp[0])))
+                                (' {:<5} {:<5} {:<5} {:<7}'.format(
+                                          *hart_data[1::2]))
+                                (' {:<4}'.format(self.bossmodel(sp2Temp[0]))),
+                                tags=["cur", "c"])
 
     def updateApogeeExpos(self, keyVar):
         if not keyVar.isGenuine:
@@ -346,16 +372,16 @@ class ScriptClass(object, ):
         #     else:
         #         return "%4.1f" % (n * 3600)
         # All offsets *3600
-        objOff0 = float(RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[0]))
-        objOff1 = float(RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[1]))
+        objOff0 = float(RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[0]))*3600
+        objOff1 = float(RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[1]))*3600
 
-        guideOff0 = float(RO.CnvUtil.posFromPVT(self.tccModel.guideOff[0]))
-        guideOff1 = float(RO.CnvUtil.posFromPVT(self.tccModel.guideOff[1]))
-        guideOff2 = float(RO.CnvUtil.posFromPVT(self.tccModel.guideOff[2]))
+        guideOff0 = float(RO.CnvUtil.posFromPVT(self.tccModel.guideOff[0]))*3600
+        guideOff1 = float(RO.CnvUtil.posFromPVT(self.tccModel.guideOff[1]))*3600
+        guideOff2 = float(RO.CnvUtil.posFromPVT(self.tccModel.guideOff[2]))*3600
 
-        calibOff0 = float(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[0]))
-        calibOff1 = float(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[1]))
-        calibOff2 = float(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[2]))
+        calibOff0 = float(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[0]))*3600
+        calibOff1 = float(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[1]))*3600
+        calibOff2 = float(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[2]))*3600
 
         # rotOff = RO.CnvUtil.posFromPVT(self.tccModel.guideOff[2])
 
@@ -379,15 +405,15 @@ class ScriptClass(object, ):
         val = sr.getKeyVar(self.apoModel.dpTempPT, ind=0, defVal=999)
         diff = at - val
 
-        objOffs = "(%3.0f,%3.0f) " % (float(objOff0), float(objOff1))
-        calibOffs = "(%2.0f,%2.0f,%2.0f) " % (float(calibOff0),
+        objOffs = "(%3.1f,%3.1f) " % (float(objOff0), float(objOff1))
+        calibOffs = "(%2.0f,%2.0f,%2.0f)" % (float(calibOff0),
                                               float(calibOff1),
                                               float(calibOff2))
-        self.logWdg1.addMsg('{:<5} {:<9} {:<+6.1f} {:<4.1f} {:<+6.1f} {:<9}'
-                            ' {:<+8.3E} {:<10} {:<8.3f}'
-                            ' {:<6}'.format(tm, cart, az, alt, rot, objOffs,
-                                            guideOff2, calibOffs, guideRMS,
-                                            atm), tags=["b", "cur"])
+        self.logWdg1.addMsg('{:<5} {:<9} {:<+6.1f} {:<4.1f} {:<+6.1f} {:<10}'
+                            ' {:<+8.1f} {:<10} {:<8.3f}'
+                            ''.format(tm, cart, az, alt, rot, objOffs,
+                                            guideOff2, calibOffs, guideRMS
+                                           ), tags=["b", "cur"])
 
         # focus
         self.logWdg2.addMsg('{:<5} {:<9} {:<+6.1f} {:<+5.0f} {:<+5.0f}'
@@ -405,7 +431,8 @@ class ScriptClass(object, ):
                             ''.format(tm, cart, airT, dp, diff, humid,
                                             wind, direc, dustb, irsc, irscmean),
                             tags=["cur"])
+        print(atm,)
 
     def run(self, sr):
         self.record(sr, "")
-        self.print_hartmann_to_log()
+        self.print_hartmann_to_log(sr)
