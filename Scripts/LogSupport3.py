@@ -102,7 +102,7 @@ class ScriptClass(object, ):
         dashes = "%s" % (width * "=")
 
         self.logWdg1.addMsg("--- Offsets --- (arcsec) ", tags=["b", "cur"])
-        self.logWdg1.addMsg('{:<5} {:<9} {:<6} {:<4} {:<6} {:<11}'
+        self.logWdg1.addMsg('{:<5} {:<9} {:<6} {:<4} {:<6} {:<13}'
                             ' {:<9} {:<10} {:<8}'
                             ''.format('Time', 'Cart', 'Az', 'Alt', 'Rot',
                                       'objOff', 'guideRot', 'calibOff',
@@ -419,7 +419,7 @@ class ScriptClass(object, ):
         calibOffs = "(%2.0f,%2.0f,%2.0f)" % (float(calibOff0),
                                              float(calibOff1),
                                              float(calibOff2))
-        self.logWdg1.addMsg('{:<5} {:<9} {:<+6.1f} {:<4.1f} {:<+6.1f} {:<11}'
+        self.logWdg1.addMsg('{:<5} {:<9} {:<+6.1f} {:<4.1f} {:<+6.1f} {:<13}'
                             ' {:<+8.1f} {:<10} {:<8.3f}'
                             ''.format(tm, cart, az, alt, rot, objOffs,
                                       guideOff2, calibOffs, guideRMS
@@ -441,7 +441,7 @@ class ScriptClass(object, ):
                             ''.format(tm, cart, airT, dp, diff, humid,
                                       wind, direc, dustb, irsc, irscmean),
                             tags=["cur"])
-        print(atm, )
+        # print(atm, )
 
     def run(self, sr):
         self.record(sr, "")
