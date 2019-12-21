@@ -29,12 +29,13 @@ some day in the past:  added 4th window for hartmann output.
 import RO.Wdg
 import TUI.Models
 import time
+import numpy as np
 
 
 # noinspection PyPep8Naming
 class ScriptClass(object, ):
     def __init__(self, sr, ):
-        # if True, run in debug-only mode 
+        # if True, run in debug-only mode _
         # if False, real time run
         sr.debug = False
         self.sr = sr
@@ -102,7 +103,7 @@ class ScriptClass(object, ):
         dashes = "%s" % (width * "-")
 
         self.logWdg1.addMsg("--- Offsets --- (arcsec) ", tags=["b", "cur"])
-        self.logWdg1.addMsg('{:<5} {:<9} {:<6} {:<4} {:<6} {:<10}'
+        self.logWdg1.addMsg('{:<5} {:<9} {:<6} {:<4} {:<6} {:<11}'
                             ' {:<9} {:<10} {:<8}'.format(
             'Time', 'Cart', 'Az', 'Alt', 'Rot', 'objOff',
             'guideRot', 'calibOff', 'guideRMS'),
@@ -277,19 +278,22 @@ class ScriptClass(object, ):
             self.logWdg4.addMsg('{:<5} {:<9} {:<5.0f} {:<+5.1f} {:<5.0f}'
                                 ' {:<7.1f}'
                                 ''.format(tm, cart, *hart_data[0::2])
-                                (' {:<4.1f}'.format(self.bossModel(sp1Temp[0])))
+                                (' {:<4.1f}'.format(float(
+                                    self.bossModel.sp1Temp[0])))
                                 (' {:<5.0f} {:<5.1f} {:<5.0f} {:<7.1f}'
                                 ''.format(*hart_data[1::2]))
-                                (' {:<4.1f}'.format(self.bossModel(
-                                    sp2Temp[0]))),
+                                (' {:<4.1f}'.format(float(
+                                    self.bossModel.sp2Temp[0]))),
                                 tags=["cur", "c"])
         except ValueError:
             self.logWdg4.addMsg('{:<5} {:<9} {:<5} {:<5} {:<5} {:<7}'
                                 ''.format(tm, cart, *hart_data[0::2])
-                                (' {:<4}'.fomrat(self.bossModel(sp1Temp[0])))
+                                (' {:<4}'.fomrat(float(
+                                    self.bossModel.sp1Temp[0])))
                                 (' {:<5} {:<5} {:<5} {:<7}'.format(
                                           *hart_data[1::2]))
-                                (' {:<4}'.format(self.bossmodel(sp2Temp[0]))),
+                                (' {:<4}'.format(float(
+                                    self.bossmodel.sp2Temp[0]))),
                                 tags=["cur", "c"])
 
     def updateApogeeExpos(self, keyVar):
@@ -409,7 +413,7 @@ class ScriptClass(object, ):
         calibOffs = "(%2.0f,%2.0f,%2.0f)" % (float(calibOff0),
                                               float(calibOff1),
                                               float(calibOff2))
-        self.logWdg1.addMsg('{:<5} {:<9} {:<+6.1f} {:<4.1f} {:<+6.1f} {:<10}'
+        self.logWdg1.addMsg('{:<5} {:<9} {:<+6.1f} {:<4.1f} {:<+6.1f} {:<11}'
                             ' {:<+8.1f} {:<10} {:<8.3f}'
                             ''.format(tm, cart, az, alt, rot, objOffs,
                                             guideOff2, calibOffs, guideRMS
