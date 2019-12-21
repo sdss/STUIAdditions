@@ -99,15 +99,15 @@ class ScriptClass(object, ):
         self.logWdg4.text.tag_config("r", foreground="red")
 
         # title lines
-        s = " "
-        dashes = "%s" % (width * "-")
+        dashes = "%s" % (width * "=")
 
         self.logWdg1.addMsg("--- Offsets --- (arcsec) ", tags=["b", "cur"])
         self.logWdg1.addMsg('{:<5} {:<9} {:<6} {:<4} {:<6} {:<11}'
-                            ' {:<9} {:<10} {:<8}'.format(
-            'Time', 'Cart', 'Az', 'Alt', 'Rot', 'objOff',
-            'guideRot', 'calibOff', 'guideRMS'),
-            tags=["b", "cur"])
+                            ' {:<9} {:<10} {:<8}'
+                            ''.format('Time', 'Cart', 'Az', 'Alt', 'Rot',
+                                      'objOff', 'guideRot', 'calibOff',
+                                      'guideRMS'),
+                            tags=["b", "cur"])
         self.logWdg1.addMsg("%s" % dashes, tags=["b", "cur"])
 
         self.logWdg2.addMsg("--- Focus ---", tags=["g", "cur"])
@@ -123,15 +123,13 @@ class ScriptClass(object, ):
         self.logWdg3.addMsg("--- Weather ---", tags=["cur"])
         self.logWdg3.addMsg('{:<5} {:<9} {:<5} {:<5} {:<4} {:<5} {:<4} {:<3}'
                             ' {:<6} {:<7} {:<5}'
-                            ''.format('Time', 'Cart', 'Temp', 'DP',
-                                            'Diff', 'Humid', 'Wind', 'Dir',
-                                            '1umDst', 'IRSCSig', 'IRSCm'),
+                            ''.format('Time', 'Cart', 'Temp', 'DP', 'Diff',
+                                      'Humid', 'Wind', 'Dir', '1umDst',
+                                      'IRSCSig', 'IRSCm'),
                             tags=["cur"])
         self.logWdg3.addMsg("%s" % dashes, tags=["cur"])
 
         self.logWdg4.addMsg("--- Hartmann ---", tags=["cur", "c"])
-        ss = "Time    Inst         r1   b1  move1 b1pred Tsp1      r2   b2  " \
-             "move2 b2pred Tsp2"
         self.logWdg4.addMsg('{:<5} {:<9} {:<5} {:<5} {:<5} {:<7} {:<4} {:<5}'
                             ' {:<5} {:<5} {:<7} {:<4}'
                             ''.format('Time', 'Cart', 'R1', 'B1', 'Move1',
@@ -235,7 +233,7 @@ class ScriptClass(object, ):
         q2 = (keyVar[4] == "sop") and (keyVar[6] == "collimateBoss")
         if q1 or q2:
             self.startHartmannCollimate = keyVar[0]  # setup flag
-            self.hartInfo = ["?"] * 8
+            self.hartInfo = [np.nan] * 8
 
     def hartEnd(self, keyVar):
         if not keyVar.isGenuine:
@@ -247,7 +245,6 @@ class ScriptClass(object, ):
     def print_hartmann_to_log(self):
         tm = self.getTAITimeStr()
         cart = self.getCart(self.sr)
-        ss1 = "%s %s   " % (tm, self.getCart(self.sr))
 
         # rPiston = self.hartInfo[0]
         # bRing = self.hartInfo[2]
@@ -269,30 +266,31 @@ class ScriptClass(object, ):
         # try:
         #    ss3 = "%5i %5.1f %5i %5.1f %4.1f" % (rPiston, bRing, spAvMove,
         #                                         spRes, spTemp)
-        #except ValueError:
+        # except ValueError:
         #    ss3 = "%5s %5s %5s %5s %4s" % (rPiston, bRing, spAvMove, spRes,
         #                                   spTemp)
         try:
             hart_data = np.array(self.hartInfo).astype(float)
-            # self.logWdg4.addMsg("%s  %s    %s" % (ss1, ss2, ss3), tags=["c", "cur"])
+            # self.logWdg4.addMsg("%s  %s    %s" % (ss1, ss2, ss3),
+            # tags=["c", "cur"])
             self.logWdg4.addMsg('{:<5} {:<9} {:<5.0f} {:<+5.1f} {:<5.0f}'
-                                ' {:<7.1f}'
-                                ''.format(tm, cart, *hart_data[0::2])
-                                (' {:<4.1f}'.format(float(
+                                ' {:<7.1f}'.format(tm, cart, *hart_data[0::2])
+                                + (' {:<4.1f}'.format(float(
                                     self.bossModel.sp1Temp[0])))
-                                (' {:<5.0f} {:<5.1f} {:<5.0f} {:<7.1f}'
-                                ''.format(*hart_data[1::2]))
-                                (' {:<4.1f}'.format(float(
+                                + (' {:<5.0f} {:<5.1f} {:<5.0f}'
+                                   ' {:<7.1f}'.format(*hart_data[1::2]))
+                                + (' {:<4.1f}'.format(float(
                                     self.bossModel.sp2Temp[0]))),
                                 tags=["cur", "c"])
         except ValueError:
+            hart_data = np.array(self.hartInfo).astype(str)
             self.logWdg4.addMsg('{:<5} {:<9} {:<5} {:<5} {:<5} {:<7}'
                                 ''.format(tm, cart, *hart_data[0::2])
-                                (' {:<4}'.fomrat(float(
+                                + (' {:<4}'.fomrat(float(
                                     self.bossModel.sp1Temp[0])))
-                                (' {:<5} {:<5} {:<5} {:<7}'.format(
-                                          *hart_data[1::2]))
-                                (' {:<4}'.format(float(
+                                + (' {:<5} {:<5} {:<5} {:<7}'.format(
+                                    *hart_data[1::2]))
+                                + (' {:<4}'.format(float(
                                     self.bossmodel.sp2Temp[0]))),
                                 tags=["cur", "c"])
 
@@ -376,16 +374,24 @@ class ScriptClass(object, ):
         #     else:
         #         return "%4.1f" % (n * 3600)
         # All offsets *3600
-        objOff0 = float(RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[0]))*3600
-        objOff1 = float(RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[1]))*3600
+        objOff0 = float(
+            RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[0])) * 3600
+        objOff1 = float(
+            RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[1])) * 3600
 
-        guideOff0 = float(RO.CnvUtil.posFromPVT(self.tccModel.guideOff[0]))*3600
-        guideOff1 = float(RO.CnvUtil.posFromPVT(self.tccModel.guideOff[1]))*3600
-        guideOff2 = float(RO.CnvUtil.posFromPVT(self.tccModel.guideOff[2]))*3600
+        guideOff0 = float(
+            RO.CnvUtil.posFromPVT(self.tccModel.guideOff[0])) * 3600
+        guideOff1 = float(
+            RO.CnvUtil.posFromPVT(self.tccModel.guideOff[1])) * 3600
+        guideOff2 = float(
+            RO.CnvUtil.posFromPVT(self.tccModel.guideOff[2])) * 3600
 
-        calibOff0 = float(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[0]))*3600
-        calibOff1 = float(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[1]))*3600
-        calibOff2 = float(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[2]))*3600
+        calibOff0 = float(
+            RO.CnvUtil.posFromPVT(self.tccModel.calibOff[0])) * 3600
+        calibOff1 = float(
+            RO.CnvUtil.posFromPVT(self.tccModel.calibOff[1])) * 3600
+        calibOff2 = float(
+            RO.CnvUtil.posFromPVT(self.tccModel.calibOff[2])) * 3600
 
         # rotOff = RO.CnvUtil.posFromPVT(self.tccModel.guideOff[2])
 
@@ -411,13 +417,13 @@ class ScriptClass(object, ):
 
         objOffs = "(%3.1f,%3.1f) " % (float(objOff0), float(objOff1))
         calibOffs = "(%2.0f,%2.0f,%2.0f)" % (float(calibOff0),
-                                              float(calibOff1),
-                                              float(calibOff2))
+                                             float(calibOff1),
+                                             float(calibOff2))
         self.logWdg1.addMsg('{:<5} {:<9} {:<+6.1f} {:<4.1f} {:<+6.1f} {:<11}'
                             ' {:<+8.1f} {:<10} {:<8.3f}'
                             ''.format(tm, cart, az, alt, rot, objOffs,
-                                            guideOff2, calibOffs, guideRMS
-                                           ), tags=["b", "cur"])
+                                      guideOff2, calibOffs, guideRMS
+                                      ), tags=["b", "cur"])
 
         # focus
         self.logWdg2.addMsg('{:<5} {:<9} {:<+6.1f} {:<+5.0f} {:<+5.0f}'
@@ -433,10 +439,10 @@ class ScriptClass(object, ):
         self.logWdg3.addMsg('{:<5} {:<9} {:<+5.1f} {:<+5.1f} {:<4.1f} {:<5.0f}'
                             ' {:<4.0f} {:<3.0f} {:<6.0f} {:<7.1f} {:<5.1f}'
                             ''.format(tm, cart, airT, dp, diff, humid,
-                                            wind, direc, dustb, irsc, irscmean),
+                                      wind, direc, dustb, irsc, irscmean),
                             tags=["cur"])
-        print(atm,)
+        print(atm, )
 
     def run(self, sr):
         self.record(sr, "")
-        self.print_hartmann_to_log(sr)
+        self.print_hartmann_to_log()
