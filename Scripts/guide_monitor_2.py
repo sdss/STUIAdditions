@@ -37,19 +37,17 @@ class ScriptClass(object):
         # Callback
 
         # Focus Error"
-        self.plot_widget.setYLimits(-100, 100, subplotInd=0)
+        self.plot_widget.setYLimits(-150, 150, subplotInd=0)
         self.plot_widget.plotKeyVar(subplotInd=0, 
-            keyVar=self.guider_model.focusError, keyInd=0,
-            color=(0.257, 0.451, 0.644))
-        self.plot_widget.addConstantLine(40, subplotInd=0, color="red")
-        self.plot_widget.addConstantLine(-40, subplotInd=0, color="red")
+            keyVar=self.guider_model.focusError, keyInd=0, c='b')
+        self.plot_widget.addConstantLine(60, subplotInd=0, color="red")
+        self.plot_widget.addConstantLine(-60, subplotInd=0, color="red")
         self.plot_widget.addConstantLine(0, subplotInd=0, c='gray')
         self.plot_widget.subplotArr[0].yaxis.set_label_text('Focus Error')
         
-        self.plot_widget.setYLimits(-40, 40, subplotInd=1)
+        self.plot_widget.setYLimits(-60, 60, subplotInd=1)
         self.plot_widget.plotKeyVar(subplotInd=1, keyInd=0,
-            func=self.scale_conv,
-            keyVar=self.guider_model.scaleError, color=(0.128, 0.515, 0.193))
+            func=self.scale_conv, keyVar=self.guider_model.scaleError, c='g')
         self.plot_widget.subplotArr[1].yaxis.set_label_text('Scale Error')
         self.plot_widget.addConstantLine(-30, subplotInd=1, c='r')
         self.plot_widget.addConstantLine(30, subplotInd=1, c='r')
