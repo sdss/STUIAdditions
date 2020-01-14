@@ -26,8 +26,8 @@ class ScriptClass(object, ):
         print('ref mag')
         ref_mag = self.guider_model.probe[9]
         s.describe(ref_mag, print_it=True)
-    def run(self,):
+    def run(self, sr):
         pass
-    def end(self,):
+    def end(self, sr):
         pass
 

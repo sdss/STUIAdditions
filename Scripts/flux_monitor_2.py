@@ -19,8 +19,8 @@ import matplotlib as mpl
 class ScriptClass(object, ):
     def __init__(self, sr, ):
         sr.debug = False
-        self.sr.master.winfo_toplevel().wm_resizable(True, True)
         self.sr = sr
+        self.sr.master.winfo_toplevel().wm_resizable(True, True)
         self.guider_model = TUI.Models.getModel("guider")
         print '---Flux Monitor 2---', datetime.datetime.now()
         timeRange = 3600
@@ -43,7 +43,7 @@ class ScriptClass(object, ):
                 c='g')
         self.plot_widget.subplotArr[0].yaxis.set_label_text('Flux Ratio')
         self.plot_widget.addConstantLine(0, subplotInd=0, c='k')
-        self.plot_widget.addConstantLine(100, subplotInd=0, c='k')
+        # self.plot_widget.addConstantLine(100, subplotInd=0, c='k')
         
     def model_ref_ratio(self, Var):
         """The guider spits out probe[8] which is the modelled magnitude. It's

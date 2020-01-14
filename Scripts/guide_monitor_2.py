@@ -22,9 +22,9 @@ class ScriptClass(object):
 
         time_range = 1800
         width = 8
-        height = 6
+        height = 9
         self.plot_widget = TUI.Base.StripChartWdg.StripChartWdg(
-            master=sr.master, timeRange=time_range, numSubplots=2, width=width,
+            master=sr.master, timeRange=time_range, numSubplots=3, width=width,
             height=height, cnvTimeFunc=TUI.Base.StripChartWdg.TimeConverter(
                 useUTC=True))
         self.plot_widget.grid(row=0, column=0, sticky='nwes')
@@ -52,6 +52,14 @@ class ScriptClass(object):
         self.plot_widget.addConstantLine(-30, subplotInd=1, c='r')
         self.plot_widget.addConstantLine(30, subplotInd=1, c='r')
         self.plot_widget.addConstantLine(0, subplotInd=1, c='gray')
+        
+        # Seeing
+        self.plot_widget.setYLimits(0, 4, subplotInd=2)
+        self.plot_widget.plotKeyVar(subplotInd=2, keyInd=0, color='orange',
+                keyVar=self.guider_model.seeing, label='Seeing')
+        self.plot_widget.subplotArr[2].yaxis.set_label_text('Seeing')
+        self.plot_widget.addConstantLine(1, subplotInd=2, c='k')
+        self.plot_widget.addConstantLine(1, subplotInd=2, c='k')
 
     def scale_conv(self, val):
         """The -1 part is baked into the input value, but we still need the 1e6
