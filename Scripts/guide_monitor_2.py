@@ -24,7 +24,7 @@ class ScriptClass(object):
         width = 8
         height = 9
         self.plot_widget = TUI.Base.StripChartWdg.StripChartWdg(
-            master=sr.master, timeRange=time_range, numSubplots=3, width=width,
+            master=sr.master, timeRange=time_range, numSubplots=4, width=width,
             height=height, cnvTimeFunc=TUI.Base.StripChartWdg.TimeConverter(
                 useUTC=True))
         self.plot_widget.grid(row=0, column=0, sticky='nwes')
@@ -54,18 +54,45 @@ class ScriptClass(object):
         self.plot_widget.addConstantLine(0, subplotInd=1, c='gray')
         
         # Seeing
-        self.plot_widget.setYLimits(0, 4, subplotInd=2)
+        self.plot_widget.setYLimits(0, 3, subplotInd=2)
         self.plot_widget.plotKeyVar(subplotInd=2, keyInd=0, color='orange',
                 keyVar=self.guider_model.seeing, label='Seeing')
         self.plot_widget.subplotArr[2].yaxis.set_label_text('Seeing')
         self.plot_widget.addConstantLine(1, subplotInd=2, c='k')
         self.plot_widget.addConstantLine(1, subplotInd=2, c='k')
 
+        self.plot_widget.plotKeyVar(subplotInd=3, keyInd=0,
+            keyVar=self.guider_model.probe, func=self.model_ref_ratio,
+            c='g')
+        self.plot_widget.subplotArr[3].yaxis.set_label_text('Flux Ratio')
+        self.plot_widget.addConstantLine(0, subplotInd=3, c='k')
+        # self.plot_widget.addConstantLine(100, subplotInd=0, c='k')
+
+
     def scale_conv(self, val):
         """The -1 part is baked into the input value, but we still need the 1e6
         """
         v = val * 1.0e6
         return v
+    def model_ref_ratio(self, Var):
+        """The guider spits out probe[8] which is the modelled magnitude. It's
+        called model because it uses a model to reduce the image, but that is
+        the actual data. Meanwhile, probe[9] is the reference magnitude and
+        should always be larger. Using the magnitude formula, I can use this
+        to compute a flux ratio. Var is unfortunately useless because it
+        refers to just model or just ref, so instead I pull it straight form
+        the guider model dictionary which updates 17? times a guider image,
+        each will result in a plotting callback that runs this function
+        """
+        model = self.guider_model.probe[8]
+        ref = self.guider_model.probe[9]
+        flux_ratio = 10**(2.5*(ref - model))
+        if flux_ratio > 1:
+            flux_ratio = 1
+        elif flux_ratio < 0:
+            flux_ratio = 0
+        print(flux_ratio)
+        return flux_ratio
 
     def run(self, sr):
         pass
