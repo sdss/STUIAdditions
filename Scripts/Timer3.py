@@ -63,7 +63,7 @@ class ScriptClass(object):
         self.fooTimer = RO.Comm.Generic.Timer()
         self.wait = 1
 #         self.fooTimer.start(self.wait, foo) # schedule self again
-        self.foo()
+        self.set_timer()
 
         self.sopModel = TUI.Models.getModel("sop")
         # self.nExp0, self.nExp1 = self.sopModel.doBossScience_nExp[0:2]
@@ -99,7 +99,7 @@ class ScriptClass(object):
         if 'MaNGA' in self.survey:
             self.calc_manga_length(keyVar)
         else:
-            calc_apog_length(keyVar)
+            self.calc_apog_length(keyVar)
 
     def calc_manga_length(self, keyVar):
         self.expTotal = self.sr.getKeyVar(self.sopModel.doMangaDither_expTime,
@@ -130,12 +130,12 @@ class ScriptClass(object):
             new_max = 900
         else:
             self.expTimer.setValue(newValue=new_value, newMin=0, newMax=new_max)
-            self.foo()
+            self.set_timer()
 
     def calc_apog_length(self, keyVar):
         self.expTotal = self.sr.getKeyVar(self.sopModel.doApogeeScience_expTime,
                                           ind=0, defVal=900)
-        self.expTotal = self.expTotal + 80
+        self.expTotal = self.expTotal
         # print self.SnExp1, self.nExp0
 
         self.SnExp1, self.nExp0 = keyVar[0:2]
@@ -161,9 +161,9 @@ class ScriptClass(object):
             new_max = 900
         else:
             self.expTimer.setValue(newValue=new_value, newMin=0, newMax=new_max)
-            self.foo()
+            self.set_timer()
 
-    def foo(self):
+    def set_timer(self):
         """ Russel's timer"""
         self.fooTimer.cancel()
         lab = " A & M Timer: "
@@ -188,7 +188,8 @@ class ScriptClass(object):
                 fgInd = 0
             self.labWdg.config(fg=self.fgList[fgInd])
             self.expTimer.setValue(newValue=min_left)
-            self.fooTimer.start(self.wait, self.foo)  # schedule self again
+            # schedule self again
+            self.fooTimer.start(self.wait, self.set_timer)
 
     def run(self, sr):
         pass
