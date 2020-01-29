@@ -61,6 +61,7 @@ class ScriptClass(object):
         self.plot_widget.addConstantLine(1, subplotInd=2, c='k')
         self.plot_widget.addConstantLine(1, subplotInd=2, c='k')
 
+        self.plot_widget.setYLimits(0, 0.15, subplotInd=3)
         self.plot_widget.plotKeyVar(subplotInd=3, keyInd=0,
             keyVar=self.guider_model.probe, func=self.model_ref_ratio,
             c='g')
@@ -91,7 +92,7 @@ class ScriptClass(object):
             flux_ratio = 1
         elif flux_ratio < 0:
             flux_ratio = 0
-        print(flux_ratio)
+        # print(flux_ratio)
         return flux_ratio
 
     def run(self, sr):

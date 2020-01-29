@@ -64,7 +64,8 @@ class ScriptClass(object):
         self.wait = 1
 #         self.fooTimer.start(self.wait, foo) # schedule self again
         self.foo()
-
+        
+        self.boss = TUI.Models.getModel('boss')
         self.sopModel = TUI.Models.getModel("sop")
         # self.nExp0, self.nExp1 = self.sopModel.doBossScience_nExp[0:2]
         self.SnExp1, self.nExp0 = self.sopModel.doApogeeMangaSequence_ditherSeq[
@@ -74,8 +75,8 @@ class ScriptClass(object):
         except: 
             self.nExp1 = 0
         
-        self.expTotal = sr.getKeyVar(self.sopModel.doMangaSequence_expTime,
-                                     ind=0, defVal=900)
+        self.expTotal = sr.getKeyVar(self.boss.exposureState,
+                                     ind=1, defVal=900)
         # I evaluated the time of reading out as 80 sec
         self.expTotal = self.expTotal + 80
         self.sopModel.doApogeeMangaSequence_ditherSeq.addCallback(
@@ -102,8 +103,8 @@ class ScriptClass(object):
             calc_apog_length(keyVar)
 
     def calc_manga_length(self, keyVar):
-        self.expTotal = self.sr.getKeyVar(self.sopModel.doMangaDither_expTime,
-                                          ind=0, defVal=900)
+        self.expTotal = self.sr.getKeyVar(self.boss.exposureState,
+                                          ind=1, defVal=900)
         self.expTotal = self.expTotal+80
         # print self.SnExp1, self.nExp0
         
