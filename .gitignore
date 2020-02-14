@@ -1,5 +1,4 @@
-*.pyc
-*.iml
-*Project_Default.xml
-*workspace.xml
-*.swp
+*.pyc  # For Python
+__pycache__/  # For Python 3
+*.swp  # For vim
+.idea  # For PyCharm

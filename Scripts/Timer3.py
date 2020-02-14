@@ -16,7 +16,7 @@ History:
 
 import os.path
 import time
-import Tkinter
+import tkinter
 import RO.Astro.Tm
 import RO.Comm
 import RO.OS
@@ -38,7 +38,7 @@ class ScriptClass(object):
 
         self.sr = sr
 
-        frame = Tkinter.Frame(sr.master)
+        frame = tkinter.Frame(sr.master)
         # gr = RO.Wdg.Gridder(frame)
         frame.grid(row=0, column=0, sticky="sn")
 

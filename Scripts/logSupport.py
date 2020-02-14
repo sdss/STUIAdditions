@@ -40,7 +40,7 @@ class ScriptClass(object, ):
         sr.debug = False
         self.sr = sr
         self.name = "-logSupport-3-"
-        print(self.name)
+        print((self.name))
         width = 80
         height = 5
 
@@ -286,7 +286,7 @@ class ScriptClass(object, ):
             hart_data = np.array(self.hartInfo).astype(str)
             self.logWdg4.addMsg('{:<5} {:<9} {:<5} {:<5} {:<5} {:<7}'
                                 ''.format(tm, cart, *hart_data[0::2])
-                                + (' {:<4}'.fomrat(float(
+                                + (' {:<4}'.format(float(
                                     self.bossModel.sp1Temp[0])))
                                 + (' {:<5} {:<5} {:<5} {:<7}'.format(
                                     *hart_data[1::2]))
