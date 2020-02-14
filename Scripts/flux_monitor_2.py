@@ -39,9 +39,9 @@ class ScriptClass(object, ):
             byminute=range(0, 61, 10)))
         
         self.plot_widget.plotKeyVar(subplotInd=0, keyInd=0,
-                keyVar=self.guider_model.probe, func=self.model_ref_ratio,
+                keyVar=self.guider_model.probe, func=self.mag_diff,
                 c='g')
-        self.plot_widget.subplotArr[0].yaxis.set_label_text('Flux Ratio')
+        self.plot_widget.subplotArr[0].yaxis.set_label_text(r'$\Delta m$')
         self.plot_widget.addConstantLine(0, subplotInd=0, c='k')
         # self.plot_widget.addConstantLine(100, subplotInd=0, c='k')
         
@@ -62,8 +62,9 @@ class ScriptClass(object, ):
             flux_ratio = 1
         elif flux_ratio < 0:
             flux_ratio = 0
-        print(flux_ratio)
         return flux_ratio
+
+
 
     def clearCharts(self):
         """Clear all strip charts

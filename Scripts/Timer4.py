@@ -74,11 +74,16 @@ class ScriptClass(object):
             self.nExp1 = len(self.SnExp1)
         except: 
             self.nExp1 = 0
-        
-        self.expTotal = sr.getKeyVar(self.boss.exposureState,
-                                     ind=1, defVal=900)
-        # I evaluated the time of reading out as 80 sec
-        self.expTotal = self.expTotal + 80
+
+        if sr.getKeyVar(self.boss.exposureState, 0) == 'INTEGRATING':
+            # This conditional loop prevents the timer from being reset every
+            # readout to n_exp_remaining * readout_time
+            self.expTotal = sr.getKeyVar(self.boss.exposureState, 1, defVal=900)
+        else:
+            self.expTotal = 900.
+
+        # I evaluated the time of reading out as 69.7 sec
+        self.expTotal = self.expTotal + 69.7
         self.sopModel.doApogeeMangaSequence_ditherSeq.addCallback(
             self.update_rtime, callNow=True)
         # self.sopModel.doApogeeScienceState.addCallback(
@@ -103,11 +108,12 @@ class ScriptClass(object):
             self.calc_apog_length(keyVar)
 
     def calc_manga_length(self, keyVar):
-        self.expTotal = self.sr.getKeyVar(self.boss.exposureState,
-                                          ind=1, defVal=900)
-        self.expTotal = self.expTotal+80
-        # print self.SnExp1, self.nExp0
-        
+        if sr.getKeyVar(self.boss.exposureState, 0) == 'INTEGRATING':
+            # This conditional loop prevents the timer from being reset every
+            # readout to n_exp_remaining * readout_time
+            self.expTotal = sr.getKeyVar(self.boss.exposureState, 1, defVal=900)
+        else:
+            self.expTotal = 900.
         self.SnExp1, self.nExp0 = keyVar[0:2]
         self.nExp1 = len(self.SnExp1)
         
@@ -135,7 +141,7 @@ class ScriptClass(object):
 
     def calc_apog_length(self, keyVar):
         self.expTotal = self.sr.getKeyVar(self.sopModel.doApogeeScience_expTime,
-                                          ind=0, defVal=900)
+                                          ind=0, defVal=500)
         self.expTotal = self.expTotal
         # print self.SnExp1, self.nExp0
 

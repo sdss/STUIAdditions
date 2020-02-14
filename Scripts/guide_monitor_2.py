@@ -61,11 +61,11 @@ class ScriptClass(object):
         self.plot_widget.addConstantLine(1, subplotInd=2, c='k')
         self.plot_widget.addConstantLine(1, subplotInd=2, c='k')
 
-        self.plot_widget.setYLimits(0, 0.15, subplotInd=3)
+        # self.plot_widget.setYLimits(0, 0.15, subplotInd=3)
         self.plot_widget.plotKeyVar(subplotInd=3, keyInd=0,
-            keyVar=self.guider_model.probe, func=self.model_ref_ratio,
+            keyVar=self.guider_model.probe, func=self.mag_diff,
             c='g')
-        self.plot_widget.subplotArr[3].yaxis.set_label_text('Flux Ratio')
+        self.plot_widget.subplotArr[3].yaxis.set_label_text(r'$\Delta m$')
         self.plot_widget.addConstantLine(0, subplotInd=3, c='k')
         # self.plot_widget.addConstantLine(100, subplotInd=0, c='k')
 
@@ -95,6 +95,17 @@ class ScriptClass(object):
         # print(flux_ratio)
         return flux_ratio
 
+    def mag_diff(self, Var):
+        """This leaves relative brightness in units of magnitude, but it is
+        intended as an alternative to self.model_ref_ratio
+        """
+        model = self.guider_model.probe[8]
+        ref = self.guider_model.probe[9]
+        diff = model - ref
+        if (diff < 0) or (diff > 3):
+            diff = np.nan
+        return diff
+    
     def run(self, sr):
         pass
 
