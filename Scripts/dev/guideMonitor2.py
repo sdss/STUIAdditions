@@ -6,10 +6,14 @@
 
 History:
 2019-12-20  DG  Init
+2020-03-16  DG  Many minor adjustments after testing. Notably that the flux
+    monitor is an average over all fibers, and it's now in magnitudes
 """
 
 import TUI
 import matplotlib as mpl
+import numpy as np
+import datetime
 
 
 class ScriptClass(object):
@@ -68,6 +72,11 @@ class ScriptClass(object):
         self.plot_widget.subplotArr[3].yaxis.set_label_text(r'$\Delta m$')
         self.plot_widget.addConstantLine(0, subplotInd=3, c='k')
         # self.plot_widget.addConstantLine(100, subplotInd=0, c='k')
+        
+        self.mag_times = []
+        self.mags = []
+        self.dt = datetime.timedelta(seconds=3)
+        self.prev_mean = 0.0
 
 
     def scale_conv(self, val):
@@ -102,8 +111,27 @@ class ScriptClass(object):
         model = self.guider_model.probe[8]
         ref = self.guider_model.probe[9]
         diff = model - ref
+        now = datetime.datetime.now()
         if (diff < 0) or (diff > 3):
             diff = np.nan
+        if len(self.mag_times) == 0:
+            self.mag_times.append(now)
+            self.mags.append(diff)
+            return self.prev_mean
+        else:
+            if (now - self.mag_times[0]) < self.dt:
+                self.mag_times.append(now)
+                self.mags.append(diff)
+                return self.prev_mean
+            else:
+                ret = np.nanmean(self.mags)
+                print('-----', now)
+                print('----', ret)
+                self.mag_times = []
+                self.mags = []
+                self.prev_mean = ret
+                return ret
+
         return diff
     
     def run(self, sr):
