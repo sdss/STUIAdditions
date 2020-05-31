@@ -9,11 +9,9 @@ History:
 
 """
 import datetime
-import RO.Wdg
 import TUI.Base.StripChartWdg
 import TUI.Models
 import matplotlib as mpl
-
 
 
 class ScriptClass(object, ):
@@ -22,30 +20,31 @@ class ScriptClass(object, ):
         self.sr = sr
         self.sr.master.winfo_toplevel().wm_resizable(True, True)
         self.guider_model = TUI.Models.getModel("guider")
-        print '---Flux Monitor 2---', datetime.datetime.now()
+        print('---Flux Monitor 2---', datetime.datetime.now())
         timeRange = 3600
         width = 8
         height = 2.4
-        
+
         self.plot_widget = TUI.Base.StripChartWdg.StripChartWdg(
             master=sr.master,
             timeRange=timeRange, numSubplots=1, width=width, height=height,
-            cnvTimeFunc=TUI.Base.StripChartWdg.TimeConverter(useUTC=True),)
-        
+            cnvTimeFunc=TUI.Base.StripChartWdg.TimeConverter(useUTC=True), )
+
         self.plot_widget.grid(row=0, column=0, sticky='nwes')
         self.plot_widget.grid_rowconfigure(0, weight=1)
         self.plot_widget.grid_columnconfigure(0, weight=1)
         self.plot_widget.xaxis.set_major_locator(mpl.dates.MinuteLocator(
             byminute=range(0, 61, 10)))
-        
+
         self.plot_widget.plotKeyVar(subplotInd=0, keyInd=0,
-                keyVar=self.guider_model.probe, func=self.mag_diff,
-                c='g')
+                                    keyVar=self.guider_model.probe,
+                                    func=self.mag_diff,
+                                    c='g')
         self.plot_widget.subplotArr[0].yaxis.set_label_text(r'$\Delta m$')
         self.plot_widget.addConstantLine(0, subplotInd=0, c='k')
         # self.plot_widget.addConstantLine(100, subplotInd=0, c='k')
-        
-    def model_ref_ratio(self, Var):
+
+    def model_ref_ratio(self, var):
         """The guider spits out probe[8] which is the modelled magnitude. It's
         called model because it uses a model to reduce the image, but that is
         the actual data. Meanwhile, probe[9] is the reference magnitude and
@@ -57,14 +56,12 @@ class ScriptClass(object, ):
         """
         model = self.guider_model.probe[8]
         ref = self.guider_model.probe[9]
-        flux_ratio = 10**(2.5*(ref - model))
+        flux_ratio = 10 ** (2.5 * (ref - model))
         if flux_ratio > 1:
             flux_ratio = 1
         elif flux_ratio < 0:
             flux_ratio = 0
         return flux_ratio
-
-
 
     def clearCharts(self):
         """Clear all strip charts
@@ -76,4 +73,3 @@ class ScriptClass(object, ):
 
     def end(self, sr):
         pass
-

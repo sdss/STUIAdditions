@@ -8,9 +8,9 @@ History:
 2019-12-20  DG  Init
 """
 
-import RO.Wdg
 import TUI
 import matplotlib as mpl
+
 
 class ScriptClass(object):
     def __init__(self, sr):
