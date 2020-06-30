@@ -24,6 +24,9 @@ some day in the past:  added 4th window for hartmann output.
 2019-10-6 DG: Rolled back previous changes by commenting the necessary lines
 2019-12-1 DG: Added a callback
 2019-12-19 DG: Made a number of formatting changes for more stable results
+2020-06-29 DG: Put any int/float conversion inside a ValueError try except in
+    case STUI returns n/a, and np.nan is used instead. Also right justified
+    numbers
 """
 
 import RO.Wdg
