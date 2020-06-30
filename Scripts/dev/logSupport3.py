@@ -19,8 +19,8 @@ some day in the past:  added 4th window for hartmann output.
    of guider changes
 2018-10-27 EM Added   guiderActor.guideRMS[1] value to logWdg1 table;  
     formatted offsets to shrink the line  
-2019-10-5 DG&EM: Replaced updateBossState with updateMangaState that correctly
-   tracks whether or not the exposure is a new manga exposure and writes to log
+2019-10-5 DG&EM: Replaced updateBossState with updateMangaState that only
+    creates a new line for every dither instead of every BOSS exposure.
 2019-10-6 DG: Rolled back previous changes by commenting the necessary lines
 2019-12-1 DG: Added a callback
 2019-12-19 DG: Made a number of formatting changes for more stable results
@@ -273,24 +273,24 @@ class ScriptClass(object, ):
             hart_data = np.array(self.hartInfo).astype(float)
             # self.logWdg4.addMsg("%s  %s    %s" % (ss1, ss2, ss3),
             # tags=["c", "cur"])
-            self.logWdg4.addMsg('{:<5} {:<9} {:<5.0f} {:<+5.1f} {:<5.0f}'
-                                ' {:<7.1f}'.format(tm, cart, *hart_data[0::2])
-                                + (' {:<4.1f}'.format(float(
+            self.logWdg4.addMsg('{:<5} {:<9} {:>5.0f} {:>5.1f} {:>5.0f}'
+                                ' {:>7.1f}'.format(tm, cart, *hart_data[0::2])
+                                + (' {:>4.1f}'.format(float(
                                     self.bossModel.sp1Temp[0])))
-                                + (' {:<5.0f} {:<5.1f} {:<5.0f}'
-                                   ' {:<7.1f}'.format(*hart_data[1::2]))
-                                + (' {:<4.1f}'.format(float(
+                                + (' {:>5.0f} {:>5.1f} {:>5.0f}'
+                                   ' {:>7.1f}'.format(*hart_data[1::2]))
+                                + (' {:>4.1f}'.format(float(
                                     self.bossModel.sp2Temp[0]))),
                                 tags=["cur", "c"])
         except ValueError:
             hart_data = np.array(self.hartInfo).astype(str)
-            self.logWdg4.addMsg('{:<5} {:<9} {:<5} {:<5} {:<5} {:<7}'
+            self.logWdg4.addMsg('{:<5} {:<9} {:>5} {:>5} {:>5} {:>7}'
                                 ''.format(tm, cart, *hart_data[0::2])
-                                + (' {:<4}'.fomrat(float(
+                                + (' {:>4}'.fomrat(float(
                                     self.bossModel.sp1Temp[0])))
-                                + (' {:<5} {:<5} {:<5} {:<7}'.format(
+                                + (' {:>5} {:>5} {:>5} {:>7}'.format(
                                     *hart_data[1::2]))
-                                + (' {:<4}'.format(float(
+                                + (' {:>4}'.format(float(
                                     self.bossmodel.sp2Temp[0]))),
                                 tags=["cur", "c"])
 
@@ -351,16 +351,41 @@ class ScriptClass(object, ):
 
     def record(self, sr, atm):
         tm = self.getTAITimeStr()
-        scale = float(sr.getKeyVar(self.tccModel.scaleFac, ind=0, defVal=1.0))
+        try:
+            scale = float(sr.getKeyVar(self.tccModel.scaleFac, ind=0,
+                defVal=1.0))
+        except ValueError:
+            scale = np.nan
+        try:
+            az = float(sr.getKeyVar(self.tccModel.axePos, ind=0, defVal=999))
+        except ValueError:
+            az = np.nan
+        try:
+            alt = float(sr.getKeyVar(self.tccModel.axePos, ind=1, defVal=99))
+        except ValueError:
+            alt = np.nan
+        try:
+            rot = float(sr.getKeyVar(self.tccModel.axePos, ind=2, defVal=999))
+        except ValueError:
+            rot = np.nan
 
-        az = float(sr.getKeyVar(self.tccModel.axePos, ind=0, defVal=999))
-        alt = float(sr.getKeyVar(self.tccModel.axePos, ind=1, defVal=99))
-        rot = float(sr.getKeyVar(self.tccModel.axePos, ind=2, defVal=999))
         cart = self.getCart(sr, )
 
-        primOr = int(sr.getKeyVar(self.tccModel.primOrient, ind=0, defVal=9999))
-        secOr = int(sr.getKeyVar(self.tccModel.secOrient, ind=0, defVal=9999))
-        secFoc = int(sr.getKeyVar(self.tccModel.secFocus, ind=0, defVal=9999))
+        try:
+            primOr = int(
+                    sr.getKeyVar(self.tccModel.primOrient, ind=0, defVal=9999))
+        except ValueError:
+            primOr = np.nan
+        try:
+            secOr = int(sr.getKeyVar(
+                self.tccModel.secOrient, ind=0, defVal=9999))
+        except ValueError:
+            secOr = np.nan
+        try:
+            secFoc = int(sr.getKeyVar(
+                self.tccModel.secFocus, ind=0, defVal=9999))
+        except ValueError:
+            secFoc = np.nan
 
         # def float(n):
         #     if n is None:
@@ -374,37 +399,82 @@ class ScriptClass(object, ):
         #     else:
         #         return "%4.1f" % (n * 3600)
         # All offsets *3600
-        objOff0 = float(
-            RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[0])) * 3600
-        objOff1 = float(
-            RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[1])) * 3600
+        try:
+            objOff0 = float(
+                RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[0])) * 3600
+        except ValueError:
+            objOff0 = np.nan
 
-        guideOff0 = float(
-            RO.CnvUtil.posFromPVT(self.tccModel.guideOff[0])) * 3600
-        guideOff1 = float(
-            RO.CnvUtil.posFromPVT(self.tccModel.guideOff[1])) * 3600
-        guideOff2 = float(
-            RO.CnvUtil.posFromPVT(self.tccModel.guideOff[2])) * 3600
-
-        calibOff0 = float(
-            RO.CnvUtil.posFromPVT(self.tccModel.calibOff[0])) * 3600
-        calibOff1 = float(
-            RO.CnvUtil.posFromPVT(self.tccModel.calibOff[1])) * 3600
-        calibOff2 = float(
-            RO.CnvUtil.posFromPVT(self.tccModel.calibOff[2])) * 3600
+        try:
+            objOff1 = float(
+                RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[1])) * 3600
+        except ValueError:
+            objOff1 = np.nan
+        try:
+            guideOff0 = float(
+                RO.CnvUtil.posFromPVT(self.tccModel.guideOff[0])) * 3600
+        except ValueError:
+            guideOff0 = np.nan
+        try:
+            guideOff1 = float(
+                RO.CnvUtil.posFromPVT(self.tccModel.guideOff[1])) * 3600
+        except ValueError:
+            guideOff1 = np.nan
+        try:
+            guideOff2 = float(
+                RO.CnvUtil.posFromPVT(self.tccModel.guideOff[2])) * 3600
+        except ValueError:
+            guideOff2 = np.nan
+        try:
+            calibOff0 = float(
+                    RO.CnvUtil.posFromPVT(self.tccModel.calibOff[0])) * 3600
+        except ValueError:
+        try:
+            calibOff1 = float(
+                RO.CnvUtil.posFromPVT(self.tccModel.calibOff[1])) * 3600
+        except ValueError:
+        try:
+            calibOff2 = float(
+                RO.CnvUtil.posFromPVT(self.tccModel.calibOff[2])) * 3600
+        except ValueError:
 
         # rotOff = RO.CnvUtil.posFromPVT(self.tccModel.guideOff[2])
 
-        fwhm = float(sr.getKeyVar(self.guiderModel.seeing, ind=0, defVal=99.9))
-        guideRMS = float(sr.getKeyVar(self.guiderModel.guideRMS, ind=1,
+        try:
+            fwhm = float(
+                    sr.getKeyVar(self.guiderModel.seeing, ind=0, defVal=99.9))
+        except ValueError:
+            fwhm = np.nan
+        try:
+            guideRMS = float(sr.getKeyVar(self.guiderModel.guideRMS, ind=1,
                                       defVal=99.999))
-
-        airT = float(sr.getKeyVar(self.apoModel.airTempPT, ind=0, defVal=-99))
-        direc = int(sr.getKeyVar(self.apoModel.windd, ind=0, defVal=-99))
-        wind = int(sr.getKeyVar(self.apoModel.winds, ind=0, defVal=99))
-        dp = sr.getKeyVar(self.apoModel.dpTempPT, ind=0, defVal=-99)
-        humid = int(sr.getKeyVar(self.apoModel.humidPT, ind=0, defVal=999))
-        dustb = int(sr.getKeyVar(self.apoModel.dustb, ind=0, defVal=9999))
+        except ValueError:
+            guideRMS = np.nan
+        try:
+            airT = float(
+                    sr.getKeyVar(self.apoModel.airTempPT, ind=0, defVal=-99))
+        except ValueError:
+            airT = np.nan
+        try:
+            direc = int(sr.getKeyVar(self.apoModel.windd, ind=0, defVal=-99))
+        except ValueError:
+            direc = np.nan
+        try:
+            wind = int(sr.getKeyVar(self.apoModel.winds, ind=0, defVal=99))
+        except ValueError:
+            wind = np.nan
+        try:
+            dp = sr.getKeyVar(self.apoModel.dpTempPT, ind=0, defVal=-99)
+        except ValueError:
+            dp = np.nan
+        try:
+            humid = int(sr.getKeyVar(self.apoModel.humidPT, ind=0, defVal=999))
+        except ValueError:
+            humid = np.nan
+        try:
+            dustb = int(sr.getKeyVar(self.apoModel.dustb, ind=0, defVal=9999))
+        except ValueError:
+            dustb = np.nan
         #   dustb="%5s" % (sr.getKeyVar(self.apoModel.dustb, ind=0,
         #   defVal="n/a"))
 
@@ -419,25 +489,25 @@ class ScriptClass(object, ):
         calibOffs = "(%2.0f,%2.0f,%2.0f)" % (float(calibOff0),
                                              float(calibOff1),
                                              float(calibOff2))
-        self.logWdg1.addMsg('{:<5} {:<9} {:<+6.1f} {:<4.1f} {:<+6.1f} {:<13}'
-                            ' {:<+8.1f} {:<10} {:<8.3f}'
+        self.logWdg1.addMsg('{:>5} {:<9} {:>6.1f} {:>4.1f} {:>6.1f} {:<13}'
+                            ' {:>8.1f} {:<10} {:>8.3f}'
                             ''.format(tm, cart, az, alt, rot, objOffs,
                                       guideOff2, calibOffs, guideRMS
                                       ), tags=["b", "cur"])
 
         # focus
-        self.logWdg2.addMsg('{:<5} {:<9} {:<+6.1f} {:<+5.0f} {:<+5.0f}'
-                            ' {:<+5.0f} {:<+6.1f} {:<5.1f} {:<+5.1f} {:<4.0f}'
-                            ' {:<3.0f}'
-                            ' {:<4.1f}'.format(tm, cart, (scale - 1) * 1e6,
+        self.logWdg2.addMsg('{:>5} {:<9} {:>6.1f} {:>6.0f} {:>5.0f}'
+                            ' {:>5.0f} {:>6.1f} {:>5.1f} {:>5.1f} {:>4.0f}'
+                            ' {:>3.0f}'
+                            ' {:>4.1f}'.format(tm, cart, (scale - 1) * 1e6,
                                                primOr,
                                                secOr, secFoc, az, alt, airT,
                                                wind, direc, fwhm),
                             tags=["g", "cur"])
 
         # weather
-        self.logWdg3.addMsg('{:<5} {:<9} {:<+5.1f} {:<+5.1f} {:<4.1f} {:<5.0f}'
-                            ' {:<4.0f} {:<3.0f} {:<6.0f} {:<7.1f} {:<5.1f}'
+        self.logWdg3.addMsg('{:<5} {:<9} {:>5.1f} {:>5.1f} {:>4.1f} {:>5.0f}'
+                            ' {:>4.0f} {:>3.0f} {:>6.0f} {:>7.1f} {:>5.1f}'
                             ''.format(tm, cart, airT, dp, diff, humid,
                                       wind, direc, dustb, irsc, irscmean),
                             tags=["cur"])
