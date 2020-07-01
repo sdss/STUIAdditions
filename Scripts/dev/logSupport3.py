@@ -107,8 +107,8 @@ class ScriptClass(object, ):
         self.logWdg1.addMsg("--- Offsets --- (arcsec) ", tags=["b", "cur"])
         self.logWdg1.addMsg('{:<5} {:<9} {:<6} {:<4} {:<6} {:<13}'
                             ' {:<9} {:<10} {:<8}'
-                            ''.format('Time', 'Cart', 'Az', 'Alt', 'Rot',
-                                      'objOff', 'guideRot', 'calibOff',
+                            ''.format('Time', ' Cart', ' Az', ' Alt', ' Rot',
+                                      ' objOff', 'guideRot', 'calibOff',
                                       'guideRMS'),
                             tags=["b", "cur"])
         self.logWdg1.addMsg("%s" % dashes, tags=["b", "cur"])
@@ -117,16 +117,17 @@ class ScriptClass(object, ):
 
         self.logWdg2.addMsg('{:<5} {:<9} {:<6} {:<5} {:<5} {:<5} {:<6} {:<5}'
                             ' {:<5} {:<4} {:<3}'
-                            ' {:<4}'.format('Time', 'Cart', 'Scale', 'M1', 'M2',
-                                            'Focus', 'Az', 'Alt', 'Temp',
-                                            'Wind', 'Dir', 'FWHM'),
+                            ' {:<4}'.format('Time', ' Cart', ' Scale', ' M1',
+                                            ' M2',
+                                            ' Focus', ' Az', ' Alt', ' Temp',
+                                            ' Wind', ' Dir', 'FWHM'),
                             tags=["g", "cur"])
         self.logWdg2.addMsg("%s" % dashes, tags=["g", "cur"])
 
         self.logWdg3.addMsg("--- Weather ---", tags=["cur"])
         self.logWdg3.addMsg('{:<5} {:<9} {:<5} {:<5} {:<4} {:<5} {:<4} {:<3}'
                             ' {:<6} {:<7} {:<5}'
-                            ''.format('Time', 'Cart', 'Temp', 'DP', 'Diff',
+                            ''.format('Time', ' Cart', ' Temp', ' DP', 'Diff',
                                       'Humid', 'Wind', 'Dir', '1umDst',
                                       'IRSCSig', 'IRSCm'),
                             tags=["cur"])
@@ -135,8 +136,8 @@ class ScriptClass(object, ):
         self.logWdg4.addMsg("--- Hartmann ---", tags=["cur", "c"])
         self.logWdg4.addMsg('{:<5} {:<9} {:<5} {:<5} {:<5} {:<7} {:<4} {:<5}'
                             ' {:<5} {:<5} {:<7} {:<4}'
-                            ''.format('Time', 'Cart', 'R1', 'B1', 'Move1',
-                                      'B1Resid', 'TSP1', 'R2', 'B2', 'Move2',
+                            ''.format('Time', ' Cart', ' R1', ' B1', 'Move1',
+                                      'B1Resid', 'TSP1', ' R2', ' B2', 'Move2',
                                       'B2Resid', 'TSP2'),
                             tags=["cur", "c"])
         # sline = "%s     %s    %s" % (14 * '-', 28 * "-", 28 * "-")
@@ -432,14 +433,17 @@ class ScriptClass(object, ):
             calibOff0 = float(
                     RO.CnvUtil.posFromPVT(self.tccModel.calibOff[0])) * 3600
         except ValueError:
+            califOff0 = np.nan
         try:
             calibOff1 = float(
                 RO.CnvUtil.posFromPVT(self.tccModel.calibOff[1])) * 3600
         except ValueError:
+            calibOff1 = np.nan
         try:
             calibOff2 = float(
                 RO.CnvUtil.posFromPVT(self.tccModel.calibOff[2])) * 3600
         except ValueError:
+            calibOff2 = np.nan
 
         # rotOff = RO.CnvUtil.posFromPVT(self.tccModel.guideOff[2])
 
@@ -519,3 +523,4 @@ class ScriptClass(object, ):
     def run(self, sr):
         self.record(sr, "")
         self.print_hartmann_to_log()
+
