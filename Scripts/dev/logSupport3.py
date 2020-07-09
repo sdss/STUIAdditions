@@ -492,7 +492,7 @@ class ScriptClass(object, ):
         val = sr.getKeyVar(self.apoModel.dpTempPT, ind=0, defVal=999)
         diff = at - val
 
-        objOffs = "(%3.1f,%3.1f) " % (float(objOff0), float(objOff1))
+        objOffs = "(%3.1f,%3.1f)" % (float(objOff0), float(objOff1))
         calibOffs = "(%2.0f,%2.0f,%2.0f)" % (float(calibOff0),
                                              float(calibOff1),
                                              float(calibOff2))
