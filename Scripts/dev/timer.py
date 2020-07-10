@@ -16,7 +16,7 @@ History:
 
 import os.path
 import time
-import Tkinter
+import tkinter as tk
 import RO.Astro.Tm
 import RO.Comm
 import RO.OS
@@ -26,6 +26,8 @@ import TUI.PlaySound
 
 SoundsDir = RO.OS.getResourceDir(TUI, "Sounds")
 SoundFileName = "Glass.wav"
+
+__version__ = '2.7.0'
 
 
 class ScriptClass(object):
@@ -38,7 +40,7 @@ class ScriptClass(object):
 
         self.sr = sr
 
-        frame = Tkinter.Frame(sr.master)
+        frame = tk.Frame(sr.master)
         # gr = RO.Wdg.Gridder(frame)
         frame.grid(row=0, column=0, sticky="sn")
 
@@ -46,18 +48,18 @@ class ScriptClass(object):
                                    fg=self.fgList[0])
         self.labWdg.grid(row=0, column=0, sticky="ns")
         self.checkWdg = RO.Wdg.Checkbutton(master=frame, text="", defValue=True,
-                                           helpText="Play sound",)
+                                           helpText="Play sound", )
         self.checkWdg.grid(row=0, column=1, sticky="we")
 
         self.expTimer = RO.Wdg.ProgressBar(master=sr.master,
-                                           valueFormat="%5.2f",  label=None)
+                                           valueFormat="%5.2f", label=None)
         self.expTimer.grid(row=1, column=0, sticky="ew")
 
         sr.master.rowconfigure(0, weight=1)
         sr.master.rowconfigure(1, weight=1)
         sr.master.columnconfigure(0, weight=1)
 
-        self.minAlert = 300.0/60.0
+        self.minAlert = 300.0 / 60.0
         self.secEnd = None
         self.alert = True
         self.fooTimer = RO.Comm.Generic.Timer()
@@ -72,7 +74,7 @@ class ScriptClass(object):
                                   0:2]
         try:
             self.nExp1 = len(self.SnExp1)
-        except: 
+        except TypeError:
             self.nExp1 = 0
 
         if sr.getKeyVar(self.boss.exposureState, 0) == 'INTEGRATING':
@@ -88,8 +90,8 @@ class ScriptClass(object):
             self.update_rtime, callNow=True)
         # self.sopModel.doApogeeScienceState.addCallback(
         #    self.update_rtime, callNow=True)
-        
-    def get_time_str(self, ):
+
+    def get_time_str(self):
         """ get timestamp"""
         self.currPythonSeconds = RO.Astro.Tm.getCurrPySec()
         self.currTAITuple = time.gmtime(self.currPythonSeconds
@@ -108,18 +110,19 @@ class ScriptClass(object):
             self.calc_apog_length(keyVar)
 
     def calc_manga_length(self, keyVar):
-        if sr.getKeyVar(self.boss.exposureState, 0) == 'INTEGRATING':
+        if self.sr.getKeyVar(self.boss.exposureState, 0) == 'INTEGRATING':
             # This conditional loop prevents the timer from being reset every
             # readout to n_exp_remaining * readout_time
-            self.expTotal = sr.getKeyVar(self.boss.exposureState, 1, defVal=900)
+            self.expTotal = self.sr.getKeyVar(self.boss.exposureState, 1,
+                                              defVal=900)
         else:
             self.expTotal = 900.
         self.SnExp1, self.nExp0 = keyVar[0:2]
         self.nExp1 = len(self.SnExp1)
-        
-        if keyVar[0] == keyVar[1]:   # end seq
+
+        if keyVar[0] == keyVar[1]:  # end seq
             self.secEnd = None
-        elif keyVar[0] != self.nExp0:   # begin seq, or next exposure
+        elif keyVar[0] != self.nExp0:  # begin seq, or next exposure
             tai, sec = self.get_time_str()
             self.secEnd = sec + (self.nExp1 - self.nExp0) * self.expTotal
             minleft = (self.nExp1 - self.nExp0) * self.expTotal / 60.0
@@ -132,7 +135,7 @@ class ScriptClass(object):
         try:
             new_value = (self.nExp1 - self.nExp0) * self.expTotal / 60.
             new_max = self.nExp1 * self.expTotal / 60.
-        except:
+        except ValueError:
             new_value = 0
             new_max = 900
         else:
@@ -163,7 +166,7 @@ class ScriptClass(object):
         try:
             new_value = (self.nExp1 - self.nExp0) * self.expTotal / 60.
             new_max = self.nExp1 * self.expTotal / 60.
-        except:
+        except ValueError:
             new_value = 0
             new_max = 900
         else:

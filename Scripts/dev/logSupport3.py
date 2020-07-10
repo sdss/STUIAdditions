@@ -1,4 +1,5 @@
-""" Elena Malanushenko  01/30/2011
+"""
+Elena Malanushenko  01/30/2011
 script to gather information for night log
 
 History: 
@@ -33,6 +34,8 @@ import RO.Wdg
 import TUI.Models
 import time
 import numpy as np
+
+__version__ = '3.0.0'
 
 
 # noinspection PyPep8Naming
@@ -290,7 +293,7 @@ class ScriptClass(object, ):
             hart_data = np.array(self.hartInfo).astype(str)
             self.logWdg4.addMsg('{:<5} {:<9} {:>5} {:>5} {:>5} {:>7}'
                                 ''.format(tm, cart, *hart_data[0::2])
-                                + (' {:>4}'.fomrat(float(
+                                + (' {:<4}'.format(float(
                                     self.bossModel.sp1Temp[0])))
                                 + (' {:>5} {:>5} {:>5} {:>7}'.format(
                                     *hart_data[1::2]))

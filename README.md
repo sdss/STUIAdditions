@@ -1,25 +1,33 @@
 # STUIAdditions
 
-By Dylan Gatlin
+This is a library of tools to be used in conjunction with STUI that will be
+ maintained by observers, primarily for SDSS-V usage. Files and documentation
+ can be tracked on confluence at
+ https://wiki.sdss.org/display/APO/Observing+Scripts. This repository is based
+ on the svn repository
+ https://svn.sdss.org/repo/operations/apo/Scripts/APO-local
+ 
+### Moderators
+Dylan Gatlin, Dmitry Bizyaev
 
-This is a repository of my development STUI Scripts. It is not connected with
- the live STUIAdditions library, but once a script is stable, it will be sent
- there to the observing team
+### Authors
+In additions to the moderators who maintain this repo, contributions were made
+ by the following authors: Elena Malanushenko
 
-## Notable Inclusions
+## Structure
+Files that are under development should be stored under Scripts/dev. Once they
+ are ready for use, move them to Scripts.
+ 
+## Code guidelines
+All scripts should follow SDSS Coding Standards found at
+ https://sdss-python-template.readthedocs.io/en/latest/standards.html, with some
+ exceptions. Code should try to use camelCase. A main function is unnecessary.
 
-### LogSupport3
-
-This is the development version of LogSupport which is meant to have callbacks
- on dither sequences and well-formatted tables.
-
-### guide_monitor_2
-
-This is a unique script designed to bypass the need for the builtin guide
- monitor, scale monitor, and focus monitor. The script is designed to be less
- busy than the builtin guide monitor
-
-### garbage_collector
-
-In an attempt to clean STUI's memory leak, I began working with the garbage
- collector. It does not work.
+## TODO
+- Many scripts are not implemented here yet
+- This repository will see many more contributions once a viable test version of
+ STUI on Python 3 is ready.
+ 
+## License
+STUIAdditions is licensed under a 3-clause BSD style license - see the
+ LICENSE.md file.

@@ -10,10 +10,13 @@ History:
     monitor is an average over all fibers, and it's now in magnitudes
 """
 
-import TUI
+import TUI.Base.StripChartWdg
+import TUI.Models
 import matplotlib as mpl
 import numpy as np
 import datetime
+
+__version__ = '3.0.0'
 
 
 class ScriptClass(object):
@@ -34,56 +37,61 @@ class ScriptClass(object):
         self.plot_widget.grid(row=0, column=0, sticky='nwes')
         self.plot_widget.grid_rowconfigure(0, weight=1)
         self.plot_widget.grid_columnconfigure(0, weight=1)
-        
+
         self.plot_widget.xaxis.set_major_locator(mpl.dates.MinuteLocator(
-            byminute=range(0,61,5)))
+            byminute=range(0, 61, 5)))
 
         # Callback
 
         # Focus Error"
         self.plot_widget.setYLimits(-150, 150, subplotInd=0)
-        self.plot_widget.plotKeyVar(subplotInd=0, 
-            keyVar=self.guider_model.focusError, keyInd=0, c='b')
+        self.plot_widget.plotKeyVar(subplotInd=0,
+                                    keyVar=self.guider_model.focusError,
+                                    keyInd=0, c='b')
         self.plot_widget.addConstantLine(60, subplotInd=0, color="red")
         self.plot_widget.addConstantLine(-60, subplotInd=0, color="red")
         self.plot_widget.addConstantLine(0, subplotInd=0, c='gray')
         self.plot_widget.subplotArr[0].yaxis.set_label_text('Focus Error')
-        
+
         self.plot_widget.setYLimits(-60, 60, subplotInd=1)
         self.plot_widget.plotKeyVar(subplotInd=1, keyInd=0,
-            func=self.scale_conv, keyVar=self.guider_model.scaleError, c='g')
+                                    func=self.scaleConvert,
+                                    keyVar=self.guider_model.scaleError, c='g')
         self.plot_widget.subplotArr[1].yaxis.set_label_text('Scale Error')
         self.plot_widget.addConstantLine(-30, subplotInd=1, c='r')
         self.plot_widget.addConstantLine(30, subplotInd=1, c='r')
         self.plot_widget.addConstantLine(0, subplotInd=1, c='gray')
-        
+
         # Seeing
         self.plot_widget.setYLimits(0, 3, subplotInd=2)
         self.plot_widget.plotKeyVar(subplotInd=2, keyInd=0, color='orange',
-                keyVar=self.guider_model.seeing, label='Seeing')
+                                    keyVar=self.guider_model.seeing,
+                                    label='Seeing')
         self.plot_widget.subplotArr[2].yaxis.set_label_text('Seeing')
         self.plot_widget.addConstantLine(1, subplotInd=2, c='k')
         self.plot_widget.addConstantLine(1, subplotInd=2, c='k')
 
         # self.plot_widget.setYLimits(0, 0.15, subplotInd=3)
         self.plot_widget.plotKeyVar(subplotInd=3, keyInd=0,
-            keyVar=self.guider_model.probe, func=self.mag_diff,
-            c='g')
+                                    keyVar=self.guider_model.probe,
+                                    func=self.mag_diff,
+                                    c='g')
         self.plot_widget.subplotArr[3].yaxis.set_label_text(r'$\Delta m$')
         self.plot_widget.addConstantLine(0, subplotInd=3, c='k')
         # self.plot_widget.addConstantLine(100, subplotInd=0, c='k')
-        
+
         self.mag_times = []
         self.mags = []
         self.dt = datetime.timedelta(seconds=3)
         self.prev_mean = 0.0
 
-
-    def scale_conv(self, val):
+    @staticmethod
+    def scaleConvert(val):
         """The -1 part is baked into the input value, but we still need the 1e6
         """
         v = val * 1.0e6
         return v
+
     def model_ref_ratio(self, Var):
         """The guider spits out probe[8] which is the modelled magnitude. It's
         called model because it uses a model to reduce the image, but that is
@@ -96,7 +104,7 @@ class ScriptClass(object):
         """
         model = self.guider_model.probe[8]
         ref = self.guider_model.probe[9]
-        flux_ratio = 10**(2.5*(ref - model))
+        flux_ratio = 10 ** (2.5 * (ref - model))
         if flux_ratio > 1:
             flux_ratio = 1
         elif flux_ratio < 0:
@@ -132,11 +140,10 @@ class ScriptClass(object):
                 self.prev_mean = ret
                 return ret
 
-        return diff
-    
+        # return diff
+
     def run(self, sr):
         pass
 
     def end(self, sr):
         pass
-

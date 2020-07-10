@@ -88,11 +88,13 @@ class FluxMonitorWdg(Tkinter.Frame):
 
 if __name__ == "__main__":
     import TestData
-
-    addWindow(TestData.tuiModel.tlSet)
-    TestData.tuiModel.tlSet.makeVisible(WindowName)
+    # Uncomment these two lines to use, they're commented because STUI will
+    # read this directory and any files in it at startup
+    # addWindow(TestData.tuiModel.tlSet)
+    # TestData.tuiModel.tlSet.makeVisible(WindowName)
 
     # there isn't any flux data yet    
 #    TestData.runTest()
-    
-    TestData.tuiModel.reactor.run()
+
+    # Uncomment this too for proper usage
+    # TestData.tuiModel.reactor.run()
