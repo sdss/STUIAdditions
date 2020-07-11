@@ -10,3 +10,4 @@
 - Switched to BSD license to conform with SDSS standards
 - Major README overhaul to match ObserverTools closely
 - Added goto5MCP
+- Removed some print statements from guideMonitor2

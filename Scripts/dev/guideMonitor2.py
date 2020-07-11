@@ -21,7 +21,7 @@ __version__ = '3.0.0'
 
 class ScriptClass(object):
     def __init__(self, sr):
-        print('---Guide Monitor 2---')
+        print('---Guide Monitor 2 Version {}---'.format(__version__))
         sr.debug = False
         sr.master.winfo_toplevel().wm_resizable(True, True)
         self.guider_model = TUI.Models.getModel('guider')
@@ -133,8 +133,6 @@ class ScriptClass(object):
                 return self.prev_mean
             else:
                 ret = np.nanmean(self.mags)
-                print('-----', now)
-                print('----', ret)
                 self.mag_times = []
                 self.mags = []
                 self.prev_mean = ret
