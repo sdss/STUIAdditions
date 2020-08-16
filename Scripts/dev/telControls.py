@@ -26,7 +26,7 @@ import TUI.Models
 import os
 import time
 
-__version__ = '3.0.0'
+__version__ = '3.1.0'
 
 
 class ScriptClass(object):
@@ -159,47 +159,47 @@ class ScriptClass(object):
             ss = "%s  mcp.semOwner = %s" % (self.getTAITimeStr(), self.semOwn)
             self.logWdg.addMsg("%s" % ss, tags="v")
 
-    def axisInit(self, bt):
+    def axisInit(self):
         self.run(self.sr, 1)
 
-    def axisStop(self, bt):
+    def axisStop(self):
         self.run(self.sr, 2)
 
-    def loadCart(self, bt):
+    def loadCart(self):
         self.run(self.sr, 3)
 
-    def stow(self, bt):
+    def stow(self):
         self.run(self.sr, 4)
 
-    def instChange(self, bt):
+    def instChange(self):
         self.run(self.sr, 5)
 
-    def specstat(self, bt):
+    def specstat(self):
         self.run(self.sr, 6)
 
-    def startFillSeq(self, bt):
+    def startFillSeq(self):
         self.run(self.sr, 7)
 
     #   def stopfillseq(self,bt): self.run(self.sr, 8)
-    def ln2stat(self, bt):
+    def ln2stat(self):
         self.run(self.sr, 9)
 
-    def tCheck(self, bt):
+    def tCheck(self):
         self.run(self.sr, 10)
 
-    def fun121_60_0(self, bt):
+    def fun121_60_0(self):
         self.run(self.sr, 11)
 
-    def fun60_60_60(self, bt):
+    def fun60_60_60(self):
         self.run(self.sr, 12)
 
-    def funAz_45_Rot(self, bt):
+    def funAz_45_Rot(self):
         self.run(self.sr, 13)
 
-    def STUIMemCheck(self, bt):
+    def STUIMemCheck(self):
         self.run(self.sr, 14)
 
-    def fun70_90_neg30(self, bt):
+    def fun70_90_neg30(self):
         self.run(self.sr, 15)
 
     @staticmethod
@@ -316,6 +316,7 @@ class ScriptClass(object):
             az = self.tccModel.axePos[0]
             rot = self.tccModel.axePos[2]
             act = "tcc"
+            self.axisInit()
             cmd = self.trackCmd(az, 45, rot)
             self.logWdg.addMsg("%s   %s %s" % (tm, act, cmd))
             sr.startCmd(actor=act, cmdStr=cmd)
@@ -331,6 +332,7 @@ class ScriptClass(object):
             alt = self.tccModel.axePos[1]
             if (alt >= 90 - 0.015) and (
                     alt <= 90 + 0.015):  # 90 deg +- 1 arc min
+                self.axisInit()
                 act = "tcc"
                 cmd = self.trackCmd(70, 90, -30)
                 sr.startCmd(actor=act, cmdStr=cmd)
