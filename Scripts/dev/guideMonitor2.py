@@ -21,7 +21,7 @@ __version__ = '3.0.0'
 
 class ScriptClass(object):
     def __init__(self, sr):
-        print('---Guide Monitor 2 Version {}---'.format(__version__))
+        print('===Guide Monitor 2 Version {}==='.format(__version__))
         sr.debug = False
         sr.master.winfo_toplevel().wm_resizable(True, True)
         self.guider_model = TUI.Models.getModel('guider')

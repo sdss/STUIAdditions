@@ -17,9 +17,15 @@
 11/20/2019 EM:  added button "(70,90,-30)"
 07/10/2020 DG:  Some minor Python 3 and inspection profile changes, added
     RO.Astro.Tm import
+10/17/2020 DG:  Added keyVar to all RO.Button callFuncs, not sure why that's
+    needed now, but it was because of the SDSS-V transition
 """
 
-import tkinter as tk
+try:
+    import tkinter as tk
+except ImportError as e:
+    import Tkinter as tk
+
 import RO.Wdg
 import RO.Astro.Tm
 import TUI.Models
@@ -38,6 +44,7 @@ class ScriptClass(object):
 
         self.sr = sr
         self.name = "telControls"
+        print('==={} Version {}==='.format(self.name, __version__))
 
         self.bossModel = TUI.Models.getModel("boss")
         self.tccModel = TUI.Models.getModel("tcc")
@@ -159,47 +166,47 @@ class ScriptClass(object):
             ss = "%s  mcp.semOwner = %s" % (self.getTAITimeStr(), self.semOwn)
             self.logWdg.addMsg("%s" % ss, tags="v")
 
-    def axisInit(self):
+    def axisInit(self, keyVar):
         self.run(self.sr, 1)
 
-    def axisStop(self):
+    def axisStop(self, keyVar):
         self.run(self.sr, 2)
 
-    def loadCart(self):
+    def loadCart(self, keyVar):
         self.run(self.sr, 3)
 
-    def stow(self):
+    def stow(self, keyVar):
         self.run(self.sr, 4)
 
-    def instChange(self):
+    def instChange(self, keyVar):
         self.run(self.sr, 5)
 
-    def specstat(self):
+    def specstat(self, keyVar):
         self.run(self.sr, 6)
 
-    def startFillSeq(self):
+    def startFillSeq(self, keyVar):
         self.run(self.sr, 7)
 
     #   def stopfillseq(self,bt): self.run(self.sr, 8)
-    def ln2stat(self):
+    def ln2stat(self, keyVar):
         self.run(self.sr, 9)
 
-    def tCheck(self):
+    def tCheck(self, keyVar):
         self.run(self.sr, 10)
 
-    def fun121_60_0(self):
+    def fun121_60_0(self, keyVar):
         self.run(self.sr, 11)
 
-    def fun60_60_60(self):
+    def fun60_60_60(self, keyVar):
         self.run(self.sr, 12)
 
-    def funAz_45_Rot(self):
+    def funAz_45_Rot(self, keyVar):
         self.run(self.sr, 13)
 
-    def STUIMemCheck(self):
+    def STUIMemCheck(self, keyVar):
         self.run(self.sr, 14)
 
-    def fun70_90_neg30(self):
+    def fun70_90_neg30(self, keyVar):
         self.run(self.sr, 15)
 
     @staticmethod

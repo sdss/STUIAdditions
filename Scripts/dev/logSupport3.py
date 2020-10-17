@@ -45,7 +45,7 @@ class ScriptClass(object, ):
         # if False, real time run
         sr.debug = False
         self.sr = sr
-        self.name = "-logSupport-3-"
+        self.name = "===logSupport 3 Version {}===".format(__version__)
         print(self.name)
         width = 80
         height = 5
@@ -173,12 +173,12 @@ class ScriptClass(object, ):
                                                   callNow=False)
         self.hartmannModel.sp1AverageMove.addCallback(self.sp1AverageMoveFun,
                                                       callNow=False)
-        self.hartmannModel.sp2AverageMove.addCallback(self.sp2AverageMoveFun,
-                                                      callNow=False)
+        # self.hartmannModel.sp2AverageMove.addCallback(self.sp2AverageMoveFun,
+        #                                               callNow=False)
         self.hartmannModel.sp1Residuals.addCallback(self.sp1ResidualsFun,
                                                     callNow=False)
-        self.hartmannModel.sp2Residuals.addCallback(self.sp2ResidualsFun,
-                                                    callNow=False)
+        # self.hartmannModel.sp2Residuals.addCallback(self.sp2ResidualsFun,
+        #                                             callNow=False)
 
         self.sopModel = TUI.Models.getModel('sop')
         # Inits a variable used later

@@ -12,7 +12,7 @@ import RO.Wdg
 import TUI.Base.StripChartWdg
 import TUI.Models
 
-WindowName = "Inst.Flux Monitor"
+WindowName = "Scripts.templates.FluxMonitorWindow"
 
 def addWindow(tlSet):
     """Create the window for TUI.
