@@ -262,43 +262,43 @@ class ScriptClass(object):
             # APO.Craig: specstat gives ln2 temps, ccd temps, and ion pumps.
             ss = "specstat"
             act = "boss"
-            cmd1 = "sp1cam raw= %s " % ss
-            cmd2 = "sp2cam raw= %s " % ss
+            cmd1 = "sp1cam raw=%s " % ss
+            # cmd2 = "sp2cam raw= %s " % ss
             self.logWdg.addMsg("%s   %s %s" % (tm, act, cmd1))
             sr.startCmd(actor=act, cmdStr=cmd1)
-            self.logWdg.addMsg("%s   %s %s" % (tm, act, cmd2))
-            sr.startCmd(actor=act, cmdStr=cmd2)
+            # self.logWdg.addMsg("%s   %s %s" % (tm, act, cmd2))
+            # sr.startCmd(actor=act, cmdStr=cmd2)
 
         if sel == 7:  # startfillseq
             #  00:33:44 APO.Craig: boss sp2cam raw=startfillseq
             ss = "startfillseq"
             act = "boss"
-            cmd1 = "sp1cam raw= %s" % ss
-            cmd2 = "sp2cam raw= %s" % ss
+            cmd1 = "sp1cam raw=%s" % ss
+            # cmd2 = "sp2cam raw= %s" % ss
             self.logWdg.addMsg("%s   %s %s" % (tm, act, cmd1))
             sr.startCmd(actor=act, cmdStr=cmd1)
-            self.logWdg.addMsg("%s   %s %s" % (tm, act, cmd2))
-            sr.startCmd(actor=act, cmdStr=cmd2)
+            # self.logWdg.addMsg("%s   %s %s" % (tm, act, cmd2))
+            # sr.startCmd(actor=act, cmdStr=cmd2)
 
         if sel == 9:  # ln2stat
             ss = "ln2stat"
             act = "boss"
             cmd1 = "sp1cam raw=%s" % ss
-            cmd2 = "sp2cam raw=%s " % ss
+            # cmd2 = "sp2cam raw=%s " % ss
             self.logWdg.addMsg("%s   %s %s" % (tm, act, cmd1))
             sr.startCmd(actor=act, cmdStr=cmd1)
-            self.logWdg.addMsg("%s   %s %s" % (tm, act, cmd2))
-            sr.startCmd(actor=act, cmdStr=cmd2)
+            # self.logWdg.addMsg("%s   %s %s" % (tm, act, cmd2))
+            # sr.startCmd(actor=act, cmdStr=cmd2)
 
         if sel == 10:  # tcheck
             ss = "tcheck"
             act = "boss"
             cmd1 = "sp1cam raw=1 %s 2 %s " % (ss, ss)
-            cmd2 = "sp2cam raw=1 %s 2 %s " % (ss, ss)
+            # cmd2 = "sp2cam raw=1 %s 2 %s " % (ss, ss)
             self.logWdg.addMsg("%s   %s %s" % (tm, act, cmd1))
             sr.startCmd(actor=act, cmdStr=cmd1)
-            self.logWdg.addMsg("%s   %s %s" % (tm, act, cmd2))
-            sr.startCmd(actor=act, cmdStr=cmd2)
+            # self.logWdg.addMsg("%s   %s %s" % (tm, act, cmd2))
+            # sr.startCmd(actor=act, cmdStr=cmd2)
 
         if sel == 11:  # fun121_60_0
             # see ticket 2173

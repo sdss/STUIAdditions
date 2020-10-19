@@ -137,11 +137,9 @@ class ScriptClass(object, ):
         self.logWdg3.addMsg("%s" % dashes, tags=["cur"])
 
         self.logWdg4.addMsg("--- Hartmann ---", tags=["cur", "c"])
-        self.logWdg4.addMsg('{:<5} {:<9} {:<5} {:<5} {:<5} {:<7} {:<4} {:<5}'
-                            ' {:<5} {:<5} {:<7} {:<4}'
+        self.logWdg4.addMsg('{:<5} {:<9} {:<5} {:<5} {:<5} {:<7} {:<4}'
                             ''.format('Time', ' Cart', ' R1', ' B1', 'Move1',
-                                      'B1Resid', 'TSP1', ' R2', ' B2', 'Move2',
-                                      'B2Resid', 'TSP2'),
+                                      'B1Resid', 'TSP1'),
                             tags=["cur", "c"])
         # sline = "%s     %s    %s" % (14 * '-', 28 * "-", 28 * "-")
 
@@ -164,13 +162,13 @@ class ScriptClass(object, ):
 
         self.hartmannModel.r1PistonMove.addCallback(self.r1PistonMoveFun,
                                                     callNow=False)
-        self.hartmannModel.r2PistonMove.addCallback(self.r2PistonMoveFun,
-                                                    callNow=False)
+        # self.hartmannModel.r2PistonMove.addCallback(self.r2PistonMoveFun,
+                                                    # callNow=False)
 
         self.hartmannModel.b1RingMove.addCallback(self.b1RingMoveFun,
                                                   callNow=False)
-        self.hartmannModel.b2RingMove.addCallback(self.b2RingMoveFun,
-                                                  callNow=False)
+        # self.hartmannModel.b2RingMove.addCallback(self.b2RingMoveFun,
+                                                  # callNow=False)
         self.hartmannModel.sp1AverageMove.addCallback(self.sp1AverageMoveFun,
                                                       callNow=False)
         # self.hartmannModel.sp2AverageMove.addCallback(self.sp2AverageMoveFun,
@@ -196,40 +194,20 @@ class ScriptClass(object, ):
             return
         self.hartInfo[0] = keyVar[0]
 
-    def r2PistonMoveFun(self, keyVar):
+    def b1RingMoveFun(self, keyVar):
         if not keyVar.isGenuine:
             return
         self.hartInfo[1] = keyVar[0]
 
-    def b1RingMoveFun(self, keyVar):
+    def sp1AverageMoveFun(self, keyVar):
         if not keyVar.isGenuine:
             return
         self.hartInfo[2] = keyVar[0]
 
-    def b2RingMoveFun(self, keyVar):
-        if not keyVar.isGenuine:
-            return
-        self.hartInfo[3] = keyVar[0]
-
-    def sp1AverageMoveFun(self, keyVar):
-        if not keyVar.isGenuine:
-            return
-        self.hartInfo[4] = keyVar[0]
-
-    def sp2AverageMoveFun(self, keyVar):
-        if not keyVar.isGenuine:
-            return
-        self.hartInfo[5] = keyVar[0]
-
     def sp1ResidualsFun(self, keyVar):
         if not keyVar.isGenuine:
             return
-        self.hartInfo[6] = keyVar[1]
-
-    def sp2ResidualsFun(self, keyVar):
-        if not keyVar.isGenuine:
-            return
-        self.hartInfo[7] = keyVar[1]
+        self.hartInfo[3] = keyVar[1]
 
     def hartStart(self, keyVar):
         if not keyVar.isGenuine:
@@ -276,30 +254,13 @@ class ScriptClass(object, ):
         # except ValueError:
         #    ss3 = "%5s %5s %5s %5s %4s" % (rPiston, bRing, spAvMove, spRes,
         #                                   spTemp)
-        try:
-            hart_data = np.array(self.hartInfo).astype(float)
-            # self.logWdg4.addMsg("%s  %s    %s" % (ss1, ss2, ss3),
-            # tags=["c", "cur"])
-            self.logWdg4.addMsg('{:<5} {:<9} {:>5.0f} {:>5.1f} {:>5.0f}'
-                                ' {:>7.1f}'.format(tm, cart, *hart_data[0::2])
-                                + (' {:>4.1f}'.format(float(
-                                    self.bossModel.sp1Temp[0])))
-                                + (' {:>5.0f} {:>5.1f} {:>5.0f}'
-                                   ' {:>7.1f}'.format(*hart_data[1::2]))
-                                + (' {:>4.1f}'.format(float(
-                                    self.bossModel.sp2Temp[0]))),
-                                tags=["cur", "c"])
-        except ValueError:
-            hart_data = np.array(self.hartInfo).astype(str)
-            self.logWdg4.addMsg('{:<5} {:<9} {:>5} {:>5} {:>5} {:>7}'
-                                ''.format(tm, cart, *hart_data[0::2])
-                                + (' {:<4}'.format(float(
-                                    self.bossModel.sp1Temp[0])))
-                                + (' {:>5} {:>5} {:>5} {:>7}'.format(
-                                    *hart_data[1::2]))
-                                + (' {:>4}'.format(float(
-                                    self.bossmodel.sp2Temp[0]))),
-                                tags=["cur", "c"])
+        hart_data = np.array(self.hartInfo).astype(float)
+        # self.logWdg4.addMsg("%s  %s    %s" % (ss1, ss2, ss3),
+        # tags=["c", "cur"])
+        self.logWdg4.addMsg('{:<5} {:<9} {:>4.1f} {:>5.0f} {:>5.1f} {:>5.0f}'
+                            ' {:>7.1f}'.format(tm, cart,
+                float(self.bossModel.sp1Temp[0]), *hart_data), 
+                            tags=["cur", "c"])
 
     def updateApogeeExpos(self, keyVar):
         if not keyVar.isGenuine:

@@ -118,7 +118,7 @@ class ScriptClass(object):
         # motor position
         self.motPos = [
             sr.getKeyVar(self.bossModel.motorPosition, ind=i, defVal=None)
-            for i in range(0, 6)]
+            for i in range(0, 3)]
         self.bossModel.motorPosition.addCallback(self.motorPosition,
                                                  callNow=True)
 
@@ -324,8 +324,8 @@ class ScriptClass(object):
         timeStr = self.getTAITimeStr()
         # sname = "%s,  %s" % (self.name, timeStr)
 
-        mv = [0] * 6
-        for i in range(0, 6):
+        mv = [0] * 3
+        for i in range(0, 3):
             try:
                 mv[i] = keyVar[i] - self.motPos[i]
             except Exception:
@@ -338,7 +338,7 @@ class ScriptClass(object):
         #     ss = "%s  sp2.motor.move= %s, %s, %s" % (
         #         timeStr, mv[3], mv[4], mv[5])
         #     self.logWdg.addMsg("%s" % ss, tags="v")
-        self.motPos = list(self.bossModel.motorPosition[0:6])
+        self.motPos = list(self.bossModel.motorPosition[0:3])
 
     # boss mechStatus  -- Parse the status of each conected mech and report
     # it in keyword form. boss moveColl <spec> [<a>] [<b>] [<c>] -- Adjust
