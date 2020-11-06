@@ -16,13 +16,14 @@ History:
 
 import os.path
 import time
-import tkinter as tk
+import Tkinter as tk
 import RO.Astro.Tm
 import RO.Comm
 import RO.OS
 import RO.Wdg
 import TUI.Models
 import TUI.PlaySound
+import numpy as np
 
 SoundsDir = RO.OS.getResourceDir(TUI, "Sounds")
 SoundFileName = "Glass.wav"
@@ -60,149 +61,68 @@ class ScriptClass(object):
         sr.master.columnconfigure(0, weight=1)
 
         self.minAlert = 300.0 / 60.0
-        self.secEnd = None
+        self.remaining_time = None
+        self.total_time = None
         self.alert = True
-        self.fooTimer = RO.Comm.Generic.Timer()
+        self.timer = RO.Comm.Generic.Timer()
         self.wait = 1
         # self.fooTimer.start(self.wait, foo) # schedule self again
         self.set_timer()
 
         self.boss = TUI.Models.getModel('boss')
         self.sopModel = TUI.Models.getModel("sop")
-        # self.nExp0, self.nExp1 = self.sopModel.doBossScience_nExp[0:2]
-        self.SnExp1, self.nExp0 = self.sopModel.doApogeeMangaSequence_ditherSeq[
-                                  0:2]
-        try:
-            self.nExp1 = len(self.SnExp1)
-        except TypeError:
-            self.nExp1 = 0
 
-        if sr.getKeyVar(self.boss.exposureState, 0) == 'INTEGRATING':
-            # This conditional loop prevents the timer from being reset every
-            # readout to n_exp_remaining * readout_time
-            self.expTotal = sr.getKeyVar(self.boss.exposureState, 1, defVal=900)
-        else:
-            self.expTotal = 900.
+        self.sopModel.doApogeeScience_index.addCallback(
+            self.calc_apogee_science_time, callNow=False
+            )
 
-        # I evaluated the time of reading out as 69.7 sec
-        self.expTotal = self.expTotal + 69.7
-        self.sopModel.doApogeeMangaSequence_ditherSeq.addCallback(
-            self.update_rtime, callNow=True)
-        # self.sopModel.doApogeeScienceState.addCallback(
-        #    self.update_rtime, callNow=True)
+        self.sopModel.doApogeeBossScience_nDither.addCallback(
+            self.calc_apogee_boss_science_time, callNow=False
+        )
 
-    def get_time_str(self):
-        """ get timestamp"""
-        self.currPythonSeconds = RO.Astro.Tm.getCurrPySec()
-        self.currTAITuple = time.gmtime(self.currPythonSeconds
-                                        - RO.Astro.Tm.getUTCMinusTAI())
-        self.taiTimeStr = time.strftime("%H:%M:%S", self.currTAITuple)
-        return self.taiTimeStr, self.currPythonSeconds
+    def calc_apogee_science_time(self, keyVar):
+        remaining_pairs = keyVar[0] - keyVar[1]
+        pair_time = np.sum(self.sopModel.doApogeeScience_expTime)
+        self.remaining_time = remaining_pairs * pair_time
+        self.total_time = keyVar[1] * pair_time
+        self.expTimer.setValue(newValue=self.remaining_time, newMin=0,
+                               newMax=self.total_time)
+        print('APOGEE Science callback: {} / {}'.format(self.remaining_time,
+                                                        self.total_time))
+        self.set_timer()
 
-    def update_rtime(self, keyVar):
-        """Callback to update the exposure values, but this is actually a
-        wrapper function for calc_manga_length and calc_apog_length
-        """
-        self.survey = self.sr.getKeyVar(self.sopModel.survey, 0)
-        if 'MaNGA' in self.survey:
-            self.calc_manga_length(keyVar)
-        else:
-            self.calc_apog_length(keyVar)
-
-    def calc_manga_length(self, keyVar):
-        if self.sr.getKeyVar(self.boss.exposureState, 0) == 'INTEGRATING':
-            # This conditional loop prevents the timer from being reset every
-            # readout to n_exp_remaining * readout_time
-            self.expTotal = self.sr.getKeyVar(self.boss.exposureState, 1,
-                                              defVal=900)
-        else:
-            self.expTotal = 900.
-        self.SnExp1, self.nExp0 = keyVar[0:2]
-        self.nExp1 = len(self.SnExp1)
-
-        if keyVar[0] == keyVar[1]:  # end seq
-            self.secEnd = None
-        elif keyVar[0] != self.nExp0:  # begin seq, or next exposure
-            tai, sec = self.get_time_str()
-            self.secEnd = sec + (self.nExp1 - self.nExp0) * self.expTotal
-            minleft = (self.nExp1 - self.nExp0) * self.expTotal / 60.0
-        elif keyVar[1] != self.nExp1:  # modification in progress
-            self.secEnd = self.secEnd + (keyVar[1] - self.nExp1) * self.expTotal
-        else:
-            tai, sec = self.get_time_str()
-            self.secEnd = sec + (self.nExp1 - self.nExp0) * self.expTotal
-
-        try:
-            new_value = (self.nExp1 - self.nExp0) * self.expTotal / 60.
-            new_max = self.nExp1 * self.expTotal / 60.
-        except ValueError:
-            new_value = 0
-            new_max = 900
-        else:
-            self.expTimer.setValue(newValue=new_value, newMin=0, newMax=new_max)
-            self.set_timer()
-
-    def calc_apog_length(self, keyVar):
-        self.expTotal = self.sr.getKeyVar(self.sopModel.doApogeeScience_expTime,
-                                          ind=0, defVal=500)
-        self.expTotal = self.expTotal
-        # print self.SnExp1, self.nExp0
-
-        self.SnExp1, self.nExp0 = keyVar[0:2]
-        self.nExp1 = len(self.SnExp1)
-
-        if keyVar[0] == keyVar[1]:  # end seq
-            self.secEnd = None
-        elif keyVar[0] != self.nExp0:  # begin seq, or next exposure
-            tai, sec = self.get_time_str()
-            self.secEnd = sec + (self.nExp1 - self.nExp0) * self.expTotal
-            minleft = (self.nExp1 - self.nExp0) * self.expTotal / 60.0
-        elif keyVar[1] != self.nExp1:  # modification in progress
-            self.secEnd = self.secEnd + (keyVar[1] - self.nExp1) * self.expTotal
-        else:
-            tai, sec = self.get_time_str()
-            self.secEnd = sec + (self.nExp1 - self.nExp0) * self.expTotal
-
-        try:
-            new_value = (self.nExp1 - self.nExp0) * self.expTotal / 60.
-            new_max = self.nExp1 * self.expTotal / 60.
-        except ValueError:
-            new_value = 0
-            new_max = 900
-        else:
-            self.expTimer.setValue(newValue=new_value, newMin=0, newMax=new_max)
-            self.set_timer()
+    def calc_apogee_boss_science_time(self, keyVar):
+        # TODO check these keywords during an Apogee Boss sequence
+        remaining_pairs = keyVar[1] - keyVar[0]
 
     def set_timer(self):
         """ Russel's timer"""
-        self.fooTimer.cancel()
-        lab = " A & M Timer: "
-        if self.secEnd is None:
-            self.labWdg.set("%s None   " % lab)
+        self.timer.cancel()
+        if self.remaining_time is None:
+            self.labWdg.set("Timer: None")
             self.labWdg.config(fg=self.fgList[0])
         else:
-            tai, sec = self.get_time_str()
-            min_left = (self.secEnd - sec) / 60.0
-            self.labWdg.set("%s %6.2f min   " % (lab, min_left))
+            min_left = self.remaining_time / 60.0
+            self.labWdg.set("Timer: {:6.1f} min".format(min_left))
             if min_left > self.minAlert:
                 fgInd = 1
                 self.alert = True
             elif 0 < min_left <= self.minAlert:
                 fgInd = 2
                 if self.alert:
-                    self.alert = False
                     if self.checkWdg.getBool():
                         self.soundPlayer.play()
                         self.soundPlayer.play()
+                        self.alert = False
             else:
                 fgInd = 0
             self.labWdg.config(fg=self.fgList[fgInd])
             self.expTimer.setValue(newValue=min_left)
             # schedule self again
-            self.fooTimer.start(self.wait, self.set_timer)
+            self.timer.start(self.wait, self.set_timer)
 
     def run(self, sr):
         pass
 
     def end(self, sr):
-        self.fooTimer.cancel()
+        self.timer.cancel()
