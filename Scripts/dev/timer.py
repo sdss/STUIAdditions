@@ -15,7 +15,6 @@ History:
 """
 
 import os.path
-import time
 import Tkinter as tk
 import RO.Astro.Tm
 import RO.Comm
@@ -52,9 +51,9 @@ class ScriptClass(object):
                                            helpText="Play sound", )
         self.checkWdg.grid(row=0, column=1, sticky="we")
 
-        self.expTimer = RO.Wdg.ProgressBar(master=sr.master,
-                                           valueFormat="%5.2f", label=None)
-        self.expTimer.grid(row=1, column=0, sticky="ew")
+        self.timer_bar = RO.Wdg.ProgressBar(master=sr.master,
+                                            valueFormat="%5.2f", label=None)
+        self.timer_bar.grid(row=1, column=0, sticky="ew")
 
         sr.master.rowconfigure(0, weight=1)
         sr.master.rowconfigure(1, weight=1)
@@ -85,15 +84,20 @@ class ScriptClass(object):
         pair_time = np.sum(self.sopModel.doApogeeScience_expTime)
         self.remaining_time = remaining_pairs * pair_time
         self.total_time = keyVar[1] * pair_time
-        self.expTimer.setValue(newValue=self.remaining_time, newMin=0,
-                               newMax=self.total_time)
-        print('APOGEE Science callback: {} / {}'.format(self.remaining_time,
-                                                        self.total_time))
+        self.timer_bar.setValue(newValue=self.remaining_time / 60, newMin=0,
+                                newMax=self.total_time/60)
+        print('APOGEE Science callback:\n'
+              ' Remaining pairs: {}'
+              ' Pair time: {}'
+              '  {} / {}'.format(remaining_pairs, pair_time,
+                                 self.remaining_time, self.total_time))
         self.set_timer()
 
     def calc_apogee_boss_science_time(self, keyVar):
+        pass
         # TODO check these keywords during an Apogee Boss sequence
-        remaining_pairs = keyVar[1] - keyVar[0]
+        # remaining_pairs = keyVar[1] - keyVar[0]
+        # pair_time = np.sum(self.sopModel.doApogeeBossScience_expTime)
 
     def set_timer(self):
         """ Russel's timer"""
@@ -117,7 +121,7 @@ class ScriptClass(object):
             else:
                 fgInd = 0
             self.labWdg.config(fg=self.fgList[fgInd])
-            self.expTimer.setValue(newValue=min_left)
+            self.timer_bar.setValue(newValue=min_left)
             # schedule self again
             self.timer.start(self.wait, self.set_timer)
 
