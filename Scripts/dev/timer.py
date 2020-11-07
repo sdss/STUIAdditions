@@ -69,26 +69,32 @@ class ScriptClass(object):
         self.set_timer()
 
         self.boss = TUI.Models.getModel('boss')
-        self.sopModel = TUI.Models.getModel("sop")
+        self.sop = TUI.Models.getModel("sop")
+        self.apogee = TUI.Models.getModel('apogee')
 
-        self.sopModel.doApogeeScience_index.addCallback(
+        self.sop.doApogeeScience_index.addCallback(
             self.calc_apogee_science_time, callNow=False
             )
 
-        self.sopModel.doApogeeBossScience_nDither.addCallback(
+        self.sop.doApogeeBossScience_nDither.addCallback(
             self.calc_apogee_boss_science_time, callNow=False
+        )
+        self.apogee.exposureState.addCallback(
+            self.calc_apogee_science_time, callNow=False
         )
 
     def calc_apogee_science_time(self, keyVar):
-        remaining_pairs = keyVar[1] - keyVar[0]
-        pair_time = np.sum(self.sopModel.doApogeeScience_expTime)
-        self.remaining_time = remaining_pairs * pair_time
+        remaining_pairs = (self.sop.doApogeeScience_index[1]
+                           - self.sop.doApogeeScience_index[0])
+        pair_time = np.sum(self.sop.doApogeeScience_expTime)
+        exp_t_passed = self.apogee.exposureState[1] * self.apogee.utrReadTime
+        self.remaining_time = remaining_pairs * pair_time - exp_t_passed
         self.total_time = keyVar[1] * pair_time
         self.timer_bar.setValue(newValue=self.remaining_time / 60, newMin=0,
-                                newMax=self.total_time/60)
+                                newMax=self.total_time / 60)
         print('APOGEE Science callback:\n'
-              ' Remaining pairs: {}'
-              ' Pair time: {}'
+              ' Remaining pairs: {}\n'
+              ' Pair time: {}\n'
               '  {} / {}'.format(remaining_pairs, pair_time,
                                  self.remaining_time, self.total_time))
         self.set_timer()
