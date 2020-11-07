@@ -81,7 +81,7 @@ class ScriptClass(object):
         )
 
     def calc_apogee_science_time(self, keyVar):
-        remaining_pairs = keyVar[0] - keyVar[1]
+        remaining_pairs = keyVar[1] - keyVar[0]
         pair_time = np.sum(self.sopModel.doApogeeScience_expTime)
         self.remaining_time = remaining_pairs * pair_time
         self.total_time = keyVar[1] * pair_time
