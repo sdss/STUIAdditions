@@ -84,6 +84,8 @@ class ScriptClass(object):
         )
 
     def calc_apogee_science_time(self, keyVar):
+        if 'APOGEE-2' not in self.sop.survey[0]:
+            return
         remaining_pairs = (self.sop.doApogeeScience_index[1]
                            - self.sop.doApogeeScience_index[0])
         pair_time = np.sum(self.sop.doApogeeScience_expTime)
