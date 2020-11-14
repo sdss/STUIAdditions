@@ -15,7 +15,6 @@ History:
 """
 
 import os.path
-import time
 import Tkinter as tk
 import RO.Astro.Tm
 import RO.Comm
@@ -28,11 +27,13 @@ import numpy as np
 SoundsDir = RO.OS.getResourceDir(TUI, "Sounds")
 SoundFileName = "Glass.wav"
 
-__version__ = '2.7.0'
+__version__ = '2.7.1'
 
 
 class ScriptClass(object):
     def __init__(self, sr, ):
+
+        print('===timer Version {}==='.format(__version__))
         sr.master.winfo_toplevel().wm_resizable(True, True)
         self.fgList = ["DarkGrey", "ForestGreen", "Brown"]
 
@@ -52,9 +53,9 @@ class ScriptClass(object):
                                            helpText="Play sound", )
         self.checkWdg.grid(row=0, column=1, sticky="we")
 
-        self.expTimer = RO.Wdg.ProgressBar(master=sr.master,
-                                           valueFormat="%5.2f", label=None)
-        self.expTimer.grid(row=1, column=0, sticky="ew")
+        self.timer_bar = RO.Wdg.ProgressBar(master=sr.master,
+                                            valueFormat="%5.2f", label=None)
+        self.timer_bar.grid(row=1, column=0, sticky="ew")
 
         sr.master.rowconfigure(0, weight=1)
         sr.master.rowconfigure(1, weight=1)
@@ -64,46 +65,63 @@ class ScriptClass(object):
         self.remaining_time = None
         self.total_time = None
         self.alert = True
+        self.call_func = 'Timer'
         self.timer = RO.Comm.Generic.Timer()
         self.wait = 1
         # self.fooTimer.start(self.wait, foo) # schedule self again
         self.set_timer()
 
         self.boss = TUI.Models.getModel('boss')
-        self.sopModel = TUI.Models.getModel("sop")
+        self.sop = TUI.Models.getModel("sop")
+        self.apogee = TUI.Models.getModel('apogee')
 
-        self.sopModel.doApogeeScience_index.addCallback(
+        self.sop.doApogeeScience_index.addCallback(
             self.calc_apogee_science_time, callNow=False
             )
 
-        self.sopModel.doApogeeBossScience_nDither.addCallback(
+        self.sop.doApogeeBossScience_nDither.addCallback(
             self.calc_apogee_boss_science_time, callNow=False
+        )
+        self.apogee.utrReadState.addCallback(
+            self.calc_apogee_science_time, callNow=False
         )
 
     def calc_apogee_science_time(self, keyVar):
-        remaining_pairs = keyVar[1] - keyVar[0]
-        pair_time = np.sum(self.sopModel.doApogeeScience_expTime)
-        self.remaining_time = remaining_pairs * pair_time
-        self.total_time = keyVar[1] * pair_time
-        self.expTimer.setValue(newValue=self.remaining_time, newMin=0,
-                               newMax=self.total_time)
-        print('APOGEE Science callback: {} / {}'.format(self.remaining_time,
-                                                        self.total_time))
+        if 'APOGEE-2' not in self.sop.survey[0]:
+            return
+        remaining_pairs = (self.sop.doApogeeScience_index[1]
+                           - self.sop.doApogeeScience_index[0])
+        dither_count = self.sop.apogeeDitherSet[1]
+        pair_time = np.sum(self.sop.doApogeeScience_expTime)
+        exp_t_passed = (dither_count * self.sop.doApogeeScience_expTime[0]
+                + self.apogee.utrReadState[2] * self.apogee.utrReadTime[0])
+        self.remaining_time = remaining_pairs * pair_time - exp_t_passed
+        self.total_time = self.sop.doApogeeScience_index[1] * pair_time
+        self.timer_bar.setValue(newValue=self.remaining_time / 60, newMin=0,
+                                newMax=self.total_time / 60)
+        self.call_func = 'APOGEE-2'
+        print('APOGEE Science timer callback:'
+              ' Remaining pairs: {}'
+              ' Pair time: {}'
+              ' Progress: {} / {}'.format(remaining_pairs, pair_time,
+                                 self.remaining_time, self.total_time))
         self.set_timer()
 
     def calc_apogee_boss_science_time(self, keyVar):
+        pass
         # TODO check these keywords during an Apogee Boss sequence
-        remaining_pairs = keyVar[1] - keyVar[0]
+        # remaining_pairs = keyVar[1] - keyVar[0]
+        # pair_time = np.sum(self.sopModel.doApogeeBossScience_expTime)
 
     def set_timer(self):
         """ Russel's timer"""
         self.timer.cancel()
         if self.remaining_time is None:
-            self.labWdg.set("Timer: None")
+            self.labWdg.set("{}: None".format(self.call_func))
             self.labWdg.config(fg=self.fgList[0])
         else:
             min_left = self.remaining_time / 60.0
-            self.labWdg.set("Timer: {:6.1f} min".format(min_left))
+            self.labWdg.set("{}: {:6.1f} min".format(self.call_func, min_left))
             if min_left > self.minAlert:
                 fgInd = 1
                 self.alert = True
@@ -117,7 +135,7 @@ class ScriptClass(object):
             else:
                 fgInd = 0
             self.labWdg.config(fg=self.fgList[fgInd])
-            self.expTimer.setValue(newValue=min_left)
+            self.timer_bar.setValue(newValue=min_left)
             # schedule self again
             self.timer.start(self.wait, self.set_timer)
 
