@@ -14,16 +14,16 @@ import TUI.Models
 
 WindowName = "Scripts.templates.FluxMonitorWindow"
 
-def addWindow(tlSet):
-    """Create the window for TUI.
-    """
-    tlSet.createToplevel(
-        name = WindowName,
-        defGeom = "+412+44",
-        visible = False,
-        resizable = True,
-        wdgFunc = FluxMonitorWdg,
-    )
+#def addWindow(tlSet):
+#    """Create the window for TUI.
+#    """
+#    tlSet.createToplevel(
+#        name = WindowName,
+#        defGeom = "+412+44",
+#        visible = False,
+#        resizable = True,
+#        wdgFunc = FluxMonitorWdg,
+#    )
 
 class FluxMonitorWdg(Tkinter.Frame):
     def __init__(self, master, timeRange=3600, width=8, height=2.4):

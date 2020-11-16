@@ -138,8 +138,8 @@ class ScriptClass(object, ):
 
         self.logWdg4.addMsg("--- Hartmann ---", tags=["cur", "c"])
         self.logWdg4.addMsg('{:<5} {:<9} {:<5} {:<5} {:<5} {:<7} {:<4}'
-                            ''.format('Time', ' Cart', ' R1', ' B1', 'Move1',
-                                      'B1Resid', 'TSP1'),
+                            ''.format('Time', ' Cart', 'TSP1', ' R1', ' B1',
+                                       'Move1', 'B1Resid'),
                             tags=["cur", "c"])
         # sline = "%s     %s    %s" % (14 * '-', 28 * "-", 28 * "-")
 

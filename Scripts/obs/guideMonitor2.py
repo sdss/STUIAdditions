@@ -16,7 +16,7 @@ import matplotlib as mpl
 import numpy as np
 import datetime
 
-__version__ = '3.0.0'
+__version__ = '3.0.1'
 
 
 class ScriptClass(object):
@@ -76,8 +76,9 @@ class ScriptClass(object):
                                     keyVar=self.guider_model.probe,
                                     func=self.mag_diff,
                                     c='g')
-        self.plot_widget.subplotArr[3].yaxis.set_label_text(r'$\Delta m$')
-        self.plot_widget.addConstantLine(0, subplotInd=3, c='k')
+        # self.plot_widget.subplotArr[3].yaxis.set_label_text(r'$\Delta m$')
+        self.plot_widget.subplotArr[3].yaxis.set_label_text('m')
+        # self.plot_widget.addConstantLine(0, subplotInd=3, c='k')
         # self.plot_widget.addConstantLine(100, subplotInd=0, c='k')
 
         self.mag_times = []
@@ -118,10 +119,12 @@ class ScriptClass(object):
         """
         model = self.guider_model.probe[8]
         ref = self.guider_model.probe[9]
-        diff = model - ref
+        print('Guider ref magnitude: {}'.format(ref))
+        # diff = model - 2.5 * 10**ref
+        diff = model
         now = datetime.datetime.now()
-        if (diff < 0) or (diff > 3):
-            diff = np.nan
+        # if (diff < 0) or (diff > 18):  # Used to be > 3
+            # diff = np.nan
         if len(self.mag_times) == 0:
             self.mag_times.append(now)
             self.mags.append(diff)

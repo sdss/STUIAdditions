@@ -1,4 +1,4 @@
-"""A timer for BOSS exposures
+"""A timer for all SDSS-V exposures
 
 History:
 2013-04-20 EM: bossTimer.py
@@ -12,6 +12,7 @@ History:
 2014-11-05 EM fixed bug with initial keyword value before connection.
 2019-12-02 EM removed any prints to STUI log;  added try to get len() of 
    sopModel.doApogeeMangaSequence_ditherSeq[0]  in init section
+2020-11-15 DG A major, almost complete rewrite to work with SDSS-V
 """
 
 import os.path
@@ -27,7 +28,7 @@ import numpy as np
 SoundsDir = RO.OS.getResourceDir(TUI, "Sounds")
 SoundFileName = "Glass.wav"
 
-__version__ = '2.7.1'
+__version__ = '2.7.2'
 
 
 class ScriptClass(object):
@@ -46,9 +47,9 @@ class ScriptClass(object):
         # gr = RO.Wdg.Gridder(frame)
         frame.grid(row=0, column=0, sticky="sn")
 
-        self.labWdg = RO.Wdg.Label(master=frame, text="      ",
+        self.label_wdg = RO.Wdg.Label(master=frame, text="      ",
                                    fg=self.fgList[0])
-        self.labWdg.grid(row=0, column=0, sticky="ns")
+        self.label_wdg.grid(row=0, column=0, sticky="ns")
         self.checkWdg = RO.Wdg.Checkbutton(master=frame, text="", defValue=True,
                                            helpText="Play sound", )
         self.checkWdg.grid(row=0, column=1, sticky="we")
@@ -61,7 +62,7 @@ class ScriptClass(object):
         sr.master.rowconfigure(1, weight=1)
         sr.master.columnconfigure(0, weight=1)
 
-        self.minAlert = 300.0 / 60.0
+        self.minAlert = 5.
         self.remaining_time = None
         self.total_time = None
         self.alert = True
@@ -77,55 +78,105 @@ class ScriptClass(object):
 
         self.sop.doApogeeScience_index.addCallback(
             self.calc_apogee_science_time, callNow=False
-            )
+        )
 
         self.sop.doApogeeBossScience_nDither.addCallback(
             self.calc_apogee_boss_science_time, callNow=False
         )
+
         self.apogee.utrReadState.addCallback(
             self.calc_apogee_science_time, callNow=False
         )
 
     def calc_apogee_science_time(self, keyVar):
-        if 'APOGEE-2' not in self.sop.survey[0]:
-            return
-        remaining_pairs = (self.sop.doApogeeScience_index[1]
-                           - self.sop.doApogeeScience_index[0])
-        dither_count = self.sop.apogeeDitherSet[1]
-        pair_time = np.sum(self.sop.doApogeeScience_expTime)
-        exp_t_passed = (dither_count * self.sop.doApogeeScience_expTime[0]
-                + self.apogee.utrReadState[2] * self.apogee.utrReadTime[0])
-        self.remaining_time = remaining_pairs * pair_time - exp_t_passed
-        self.total_time = self.sop.doApogeeScience_index[1] * pair_time
-        self.timer_bar.setValue(newValue=self.remaining_time / 60, newMin=0,
-                                newMax=self.total_time / 60)
-        self.call_func = 'APOGEE-2'
-        print('APOGEE Science timer callback:'
-              ' Remaining pairs: {}'
-              ' Pair time: {}'
-              ' Progress: {} / {}'.format(remaining_pairs, pair_time,
-                                 self.remaining_time, self.total_time))
+        print('timer survey: {}'.format('BHM lead' in self.sop.survey[1]))
+        if 'APOGEE-2' in self.sop.survey[0]:
+            remaining_pairs = (self.sop.doApogeeScience_index[1]
+                               - self.sop.doApogeeScience_index[0])
+            dither_count = self.sop.apogeeDitherSet[1]
+            pair_time = np.sum(self.sop.doApogeeScience_expTime)
+            self.exp_t_passed = (dither_count
+                    * self.sop.doApogeeScience_expTime[0]
+                    + self.apogee.utrReadState[2] * self.apogee.utrReadTime[0])
+            self.remaining_time = (remaining_pairs * pair_time
+                    - self.exp_t_passed)
+            self.total_time = self.sop.doApogeeScience_index[1] * pair_time
+            self.timer_bar.setValue(newValue=self.remaining_time / 60, newMin=0,
+                                    newMax=self.total_time / 60)
+            self.call_func = 'APOGEE-2'
+            print('APOGEE Science (APOGEE utrRead) timer callback,'
+                  ' Remaining pairs: {}'
+                  ' Pair time: {}'
+                  ' Progress: {} / {}'.format(remaining_pairs, pair_time,
+                                     self.remaining_time, self.total_time))
+        elif 'BHM lead' in self.sop.survey[1]:
+            remaining_exps = (self.sop.doApogeeBossScience_nDither[1]
+                               - self.sop.doApogeeBossScience_nDither[0])
+            total_exps = self.sop.doApogeeBossScience_nDither[1]
+            dither_count = self.sop.apogeeDitherSet[1]
+            exp_time = np.max(self.sop.doBossScience_expTime) + 60
+            dither_time = np.max(self.sop.doApogeeScience_expTime)
+
+            self.exp_t_passed = (self.sop.doApogeeBossScience_nDither[0]
+                    * exp_time
+                    + dither_count * dither_time
+                    + self.apogee.utrReadState[2] * self.apogee.utrReadTime[0])
+            self.remaining_time = total_exps * exp_time - self.exp_t_passed
+            self.total_time = (self.sop.doApogeeBossScience_nDither[1]
+                    * exp_time)
+            self.timer_bar.setValue(newValue=self.remaining_time / 60, newMin=0,
+                                    newMax=self.total_time / 60)
+            self.call_func = 'BHM Lead'
+            print('BHM Lead (APOGEE utrRead) timer callback,'
+                  ' Remaining exps: {}'
+                  ' Exp time: {}'
+                  ' Progress: {} / {}'.format(remaining_exps, exp_time,
+                                     self.remaining_time, self.total_time))
+
         self.set_timer()
 
     def calc_apogee_boss_science_time(self, keyVar):
-        pass
-        # TODO check these keywords during an Apogee Boss sequence
-        # remaining_pairs = keyVar[1] - keyVar[0]
-        # pair_time = np.sum(self.sopModel.doApogeeBossScience_expTime)
+        remaining_exps = (self.sop.doApogeeBossScience_nDither[1]
+                           - self.sop.doApogeeBossScience_nDither[0])
+        total_exps = self.sop.doApogeeBossScience_nDither[1]
+        dither_count = self.sop.apogeeDitherSet[1]
+        exp_time = np.max(self.sop.doBossScience_expTime) + 60
+        dither_time = np.max(self.sop.doApogeeScience_expTime)
+
+        self.exp_t_passed = (self.sop.doApogeeBossScience_nDither[0]
+                * exp_time
+                + dither_count * dither_time
+                + self.apogee.utrReadState[2] * self.apogee.utrReadTime[0])
+        self.remaining_time = total_exps * exp_time - self.exp_t_passed
+        self.total_time = (self.sop.doApogeeBossScience_nDither[1]
+                * exp_time)
+        self.timer_bar.setValue(newValue=self.remaining_time / 60, newMin=0,
+                                newMax=self.total_time / 60)
+        self.call_func = 'BHM Lead'
+        print('BHM Lead (APOGEE utrRead) timer callback,'
+              ' Remaining exps: {}'
+              ' Exp time: {}'
+              ' Progress: {} / {}'.format(remaining_exps, exp_time,
+                                 self.remaining_time, self.total_time))
+        self.set_timer()
+
 
     def set_timer(self):
         """ Russel's timer"""
         self.timer.cancel()
         if self.remaining_time is None:
-            self.labWdg.set("{}: None".format(self.call_func))
-            self.labWdg.config(fg=self.fgList[0])
+            self.label_wdg.set("{}: No time at all".format(self.call_func))
+            self.label_wdg.config(fg=self.fgList[0])
+        elif self.remaining_time < 0:
+            self.remaining_time = None
         else:
             min_left = self.remaining_time / 60.0
-            self.labWdg.set("{}: {:6.1f} min".format(self.call_func, min_left))
+            self.label_wdg.set("{}: {:6.1f} min".format(
+                               self.call_func, min_left))
             if min_left > self.minAlert:
                 fgInd = 1
                 self.alert = True
-            elif 0 < min_left <= self.minAlert:
+            elif min_left < self.minAlert:
                 fgInd = 2
                 if self.alert:
                     if self.checkWdg.getBool():
@@ -134,7 +185,7 @@ class ScriptClass(object):
                         self.alert = False
             else:
                 fgInd = 0
-            self.labWdg.config(fg=self.fgList[fgInd])
+            self.label_wdg.config(fg=self.fgList[fgInd])
             self.timer_bar.setValue(newValue=min_left)
             # schedule self again
             self.timer.start(self.wait, self.set_timer)
@@ -144,3 +195,4 @@ class ScriptClass(object):
 
     def end(self, sr):
         self.timer.cancel()
+
