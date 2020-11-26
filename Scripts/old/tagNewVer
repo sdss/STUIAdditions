@@ -1,0 +1,46 @@
+#!/usr/bin/env python
+
+""" new  APO-local  script version release in svn
+
+dd='svn+ssh://sdss3svn@sdss3.org/repo/apo/Scripts/trunk'
+dd='svn+ssh://sdss3svn@sdss3.org/repo/apo/Scripts/tags/v4_1/'
+svn export ${dd}
+
+08-22-2013 EM 
+"""
+
+import  optparse 
+import os, sys,shutil
+
+desc = 'tag new version for  APO-local scripts from svn '
+usage=' %(prog)s [OPTIONS]'
+parser = optparse.OptionParser(description=desc,usage=usage)
+parser.add_option('-v', '--version',  help="set new version ( like v4_4)", action='store')
+(opts, args) = parser.parse_args()
+ver=opts.version
+if ver == "None": 
+   sys.exit("no version set")
+
+file = open("version.txt", "w")
+file.write(ver)
+file.close() 
+cmd="svn commit -m'set new version'" 
+os.system(cmd)
+
+dd="svn+ssh://sdss3svn@sdss3.org/repo/apo/Scripts/trunk"
+pp="svn+ssh://sdss3svn@sdss3.org/repo/apo/Scripts/tags/%s" % ver
+cmd="svn copy %s %s -m  %s"  % (dd, pp, ver)
+os.system(cmd)
+
+print dd
+print pp
+print cmd
+
+file = open("version.txt", "w")
+file.write(ver+"+trunk")
+file.close() 
+
+#tag new version:
+#elena:Scripts elenam$ dd="svn+ssh://sdss3svn@sdss3.org/repo/apo/Scripts/trunk"
+#elena:Scripts elenam$ pp="svn+ssh://sdss3svn@sdss3.org/repo/apo/Scripts/tags/v4_0"
+#elena:Scripts elenam$ svn copy ${dd}  ${pp} -m"v4_0"
