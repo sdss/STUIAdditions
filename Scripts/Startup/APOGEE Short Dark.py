@@ -1,4 +1,3 @@
-
 """
 takes short dark to check apogee binding 
 
@@ -15,97 +14,99 @@ History
 03-05-2014  design refinement  
 """
 
-import RO.Wdg
-import TUI.Models
-from datetime import datetime
 import time
-#import RO.Astro.Tm
-import subprocess
-import tkMessageBox as box
+
+import RO.Wdg
+
+
+# import RO.Astro.Tm
+
 
 class ScriptClass(object):
     def __init__(self, sr):
         # if True, run in debug-only mode (which doesn't DO anything)
         # if False, real time run
         sr.debug = False
-        
+
         sr.master.winfo_toplevel().wm_resizable(True, True)
-        self.logWdg = RO.Wdg.LogWdg(master=sr.master, width=35, height =20,)
+        self.logWdg = RO.Wdg.LogWdg(master=sr.master, width=35, height=20, )
         self.logWdg.grid(row=0, column=0, sticky="news")
         sr.master.rowconfigure(0, weight=1)
         sr.master.columnconfigure(0, weight=1)
-        self.name="APOGEE Short Dark"        
+        self.name = "APOGEE Short Dark"
         self.logWdg.text.tag_config("a", foreground="DarkOrange")
         self.logWdg.text.tag_config("g", foreground="grey")
         self.logWdg.text.tag_config("n", )
         self.logWdg.text.tag_config("nov", background="lightgreen")
 
-        self.cmdListDark=[
+        self.cmdListDark = [
             "apogeecal allOff",
             "apogee shutter close",
             "apogeecal shutterOpen",
             "apogee expose nreads=3 ; object=Dark",
-         #   "apogee expose nreads=10 ; object=Dark",
+            #   "apogee expose nreads=10 ; object=Dark",
             "apogeecal shutterClose",
-            "apogeecal allOff", 
-            ]            
-        self.cmdListTest=[
+            "apogeecal allOff",
+        ]
+        self.cmdListTest = [
             "tcc show time",
             "tcc show time",
             "tcc show time",
-            "tcc show time",            
-            ]                 
+            "tcc show time",
+        ]
 
-        self.cmdList=self.cmdListDark                        
-        self.tagsList=["g"]*len(self.cmdList)
-        self.tm=self.getTAITimeStr() 
+        self.cmdList = self.cmdListDark
+        self.tagsList = ["g"] * len(self.cmdList)
+        self.tm = self.getTAITimeStr()
         self.updateLog()
-        
+
     def updateLog(self, time=False):
-        self.logWdg.clearOutput() 
+        self.logWdg.clearOutput()
         if time:
-            self.tm = self.getTAITimeStr() 
-        self.logWdg.addMsg("-- %s - %s" % (self.name, self.tm),  tags=["a"] )
-        for ll,tt in zip(self.cmdList,self.tagsList) : 
-            self.logWdg.addMsg("%s" % ll,tags=tt)
-        
-    def getTAITimeStr(self,):
-      currPythonSeconds = RO.Astro.Tm.getCurrPySec()
-      currTAITuple= time.gmtime(currPythonSeconds - RO.Astro.Tm.getUTCMinusTAI())
-      self.taiTimeStr = time.strftime("%H:%M:%S", currTAITuple) 
-      return self.taiTimeStr
+            self.tm = self.getTAITimeStr()
+        self.logWdg.addMsg("-- %s - %s" % (self.name, self.tm), tags=["a"])
+        for ll, tt in zip(self.cmdList, self.tagsList):
+            self.logWdg.addMsg("%s" % ll, tags=tt)
 
-    def run(self, sr):       
+    def getTAITimeStr(self, ):
+        currPythonSeconds = RO.Astro.Tm.getCurrPySec()
+        currTAITuple = time.gmtime(
+            currPythonSeconds - RO.Astro.Tm.getUTCMinusTAI())
+        self.taiTimeStr = time.strftime("%H:%M:%S", currTAITuple)
+        return self.taiTimeStr
 
-      i=0 
-      self.tagsList=["g"]*len(self.cmdList)
-      self.updateLog(time=True)
-      for actorCmd in self.cmdList:
-         self.tagsList[i]=["nov"] 
-         self.updateLog()
-         actor, cmd = actorCmd.split(None, 1)
-         yield sr.waitCmd(actor=actor, cmdStr=cmd, checkFail = True,)
-         cmdVar = sr.value
-         if cmdVar.didFail:
-             ss1=" %s   ** FAILED **" % (actorCmd)
-             self.logWdg.addMsg("      %s" % (ss1),severity=RO.Constants.sevError)
-             break
-   #          raise sr.ScriptError("")
-         yield sr.waitMS(2*1000) 
-         self.tagsList[i]=["n"] 
-         self.updateLog()       
-         i=i+1 
+    def run(self, sr):
 
-      self.logWdg.addMsg("-- done --",tags=["a"])  
-      self.logWdg.addMsg("")
+        i = 0
+        self.tagsList = ["g"] * len(self.cmdList)
+        self.updateLog(time=True)
+        for actorCmd in self.cmdList:
+            self.tagsList[i] = ["nov"]
+            self.updateLog()
+            actor, cmd = actorCmd.split(None, 1)
+            yield sr.waitCmd(actor=actor, cmdStr=cmd, checkFail=True, )
+            cmdVar = sr.value
+            if cmdVar.didFail:
+                ss1 = " %s   ** FAILED **" % (actorCmd)
+                self.logWdg.addMsg("      %s" % (ss1),
+                                   severity=RO.Constants.sevError)
+                break
+            #          raise sr.ScriptError("")
+            yield sr.waitMS(2 * 1000)
+            self.tagsList[i] = ["n"]
+            self.updateLog()
+            i = i + 1
 
-#mcp.py
-#Key("apogeeGang",
-#Enum("0", "1", "2", "3", labelHelp=("Disconnected", "Podium", "Cart", "Sparse cals"))),
+        self.logWdg.addMsg("-- done --", tags=["a"])
+        self.logWdg.addMsg("")
 
-#apogeecal allOff
-#apogee shutter close
-#apogeecal shutterOpen
-#apogee expose nreads=3 ; object=Dark
-#apogeecal shutterClose
-#apogeecal allOff
+# mcp.py
+# Key("apogeeGang",
+# Enum("0", "1", "2", "3", labelHelp=("Disconnected", "Podium", "Cart", "Sparse cals"))),
+
+# apogeecal allOff
+# apogee shutter close
+# apogeecal shutterOpen
+# apogee expose nreads=3 ; object=Dark
+# apogeecal shutterClose
+# apogeecal allOff

@@ -11,3 +11,12 @@
 - Major README overhaul to match ObserverTools closely
 - Added goto5MCP
 - Removed some print statements from guideMonitor2
+
+## [3.1.0] - 2020-11-30
+
+### Changes
+
+- Added all the scripts from STUI because STUI 1.7.11 will remove them.
+- Removed dithering from APOGEE cals
+- Renamed all files to Title Format since they'll be seen by users
+- 

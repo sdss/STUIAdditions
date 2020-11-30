@@ -26,11 +26,12 @@ try:
 except ImportError as e:
     import Tkinter as tk
 
-import RO.Wdg
-import RO.Astro.Tm
-import TUI.Models
 import os
 import time
+
+import RO.Astro.Tm
+import RO.Wdg
+import TUI.Models
 
 __version__ = '3.1.0'
 

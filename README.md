@@ -24,7 +24,6 @@ All scripts should follow SDSS Coding Standards found at
  exceptions. Code should try to use camelCase. A main function is unnecessary.
 
 ## TODO
-- Many scripts are not implemented here yet
 - This repository will see many more contributions once a viable test version of
  STUI on Python 3 is ready.
  

@@ -25,14 +25,15 @@
 2020-07-09  DG  Moved to new STUIAdditions repository, made some Python 3
     changes and ran it through a linter
 """
-import RO.Wdg
-import RO.Astro.Tm
-import tkinter as tk
-import TUI.Models
 import os
-import time
-import subprocess as sub
 import socket
+import subprocess as sub
+import time
+import Tkinter as tk
+
+import RO.Astro.Tm
+import RO.Wdg
+import TUI.Models
 
 __version__ = '3.0.0'
 
@@ -196,6 +197,12 @@ class ScriptClass(object):
         tm = self.getTAITimeStr()
         self.altDes = self.altWdg.getNum()  # destination altDes from
         # self.altWdg
+        if not ((self.altDes >= 5) and (self.altDes <= 90)):
+            # print('Destination altitude not between 5 and 90:'
+            # ' {}, exit'.format(self.altDes))
+            raise sr.ScriptError('Dest {:.1f} not between [5, 90]'
+                                 ''.format(self.altDes))
+
         self.prnMsg("%s  Start the move to %s " % (tm, self.altDes))
         print(self.altDes)
 
@@ -357,7 +364,7 @@ class ScriptClass(object):
                     self.prnMsg(mes)
                     break
                 elif (pos < (self.altDes + (self.alt - self.altDes) * 0.2)
-                        and abs(vel) >= abs(velold)):
+                      and abs(vel) >= abs(velold)):
                     self.prnMsg(ssPos)
                     mes = "move did not decelerate, brake"
                     self.prnMsg(mes)

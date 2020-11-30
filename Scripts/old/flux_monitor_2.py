@@ -9,9 +9,10 @@ History:
 
 """
 import datetime
+import matplotlib as mpl
+
 import TUI.Base.StripChartWdg
 import TUI.Models
-import matplotlib as mpl
 
 
 class ScriptClass(object, ):

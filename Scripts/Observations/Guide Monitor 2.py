@@ -10,11 +10,12 @@ History:
     monitor is an average over all fibers, and it's now in magnitudes
 """
 
-import TUI.Base.StripChartWdg
-import TUI.Models
+import datetime
 import matplotlib as mpl
 import numpy as np
-import datetime
+
+import TUI.Base.StripChartWdg
+import TUI.Models
 
 __version__ = '3.0.1'
 
@@ -124,7 +125,7 @@ class ScriptClass(object):
         diff = model
         now = datetime.datetime.now()
         # if (diff < 0) or (diff > 18):  # Used to be > 3
-            # diff = np.nan
+        # diff = np.nan
         if len(self.mag_times) == 0:
             self.mag_times.append(now)
             self.mags.append(diff)

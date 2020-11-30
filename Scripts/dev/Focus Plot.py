@@ -8,19 +8,21 @@ History:
 2020-07-27  DG  Init, based on the focusPlotWdg and a little guideMonitor2
 """
 
+import Tkinter
+
 # import datetime
 # import matplotlib as mpl
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTk
-from TUI.Inst.Guide import GuideImage
 import numpy as np
 import sys
+from matplotlib.backends.backend_tkagg import FigureCanvasTk
+
 import RO.Constants
 import RO.StringUtil
 import TUI.Base.StripChartWdg
 import TUI.Models
 import TUI.TUIMenu.DownloadsWindow
-import Tkinter
+from TUI.Inst.Guide import GuideImage
 
 __version__ = '3.0.0'
 

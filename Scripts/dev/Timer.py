@@ -15,15 +15,17 @@ History:
 2020-11-15 DG A major, almost complete rewrite to work with SDSS-V
 """
 
-import os.path
 import Tkinter as tk
+import os.path
+
+import numpy as np
+
 import RO.Astro.Tm
 import RO.Comm
 import RO.OS
 import RO.Wdg
 import TUI.Models
 import TUI.PlaySound
-import numpy as np
 
 SoundsDir = RO.OS.getResourceDir(TUI, "Sounds")
 SoundFileName = "Glass.wav"
@@ -48,7 +50,7 @@ class ScriptClass(object):
         frame.grid(row=0, column=0, sticky="sn")
 
         self.label_wdg = RO.Wdg.Label(master=frame, text="      ",
-                                   fg=self.fgList[0])
+                                      fg=self.fgList[0])
         self.label_wdg.grid(row=0, column=0, sticky="ns")
         self.checkWdg = RO.Wdg.Checkbutton(master=frame, text="", defValue=True,
                                            helpText="Play sound", )
@@ -96,10 +98,11 @@ class ScriptClass(object):
             dither_count = self.sop.apogeeDitherSet[1]
             pair_time = np.sum(self.sop.doApogeeScience_expTime)
             self.exp_t_passed = (dither_count
-                    * self.sop.doApogeeScience_expTime[0]
-                    + self.apogee.utrReadState[2] * self.apogee.utrReadTime[0])
+                                 * self.sop.doApogeeScience_expTime[0]
+                                 + self.apogee.utrReadState[2] *
+                                 self.apogee.utrReadTime[0])
             self.remaining_time = (remaining_pairs * pair_time
-                    - self.exp_t_passed)
+                                   - self.exp_t_passed)
             self.total_time = self.sop.doApogeeScience_index[1] * pair_time
             self.timer_bar.setValue(newValue=self.remaining_time / 60, newMin=0,
                                     newMax=self.total_time / 60)
@@ -108,22 +111,24 @@ class ScriptClass(object):
                   ' Remaining pairs: {}'
                   ' Pair time: {}'
                   ' Progress: {} / {}'.format(remaining_pairs, pair_time,
-                                     self.remaining_time, self.total_time))
+                                              self.remaining_time,
+                                              self.total_time))
         elif 'BHM lead' in self.sop.survey[1]:
             remaining_exps = (self.sop.doApogeeBossScience_nDither[1]
-                               - self.sop.doApogeeBossScience_nDither[0])
+                              - self.sop.doApogeeBossScience_nDither[0])
             total_exps = self.sop.doApogeeBossScience_nDither[1]
             dither_count = self.sop.apogeeDitherSet[1]
             exp_time = np.max(self.sop.doBossScience_expTime) + 60
             dither_time = np.max(self.sop.doApogeeScience_expTime)
 
             self.exp_t_passed = (self.sop.doApogeeBossScience_nDither[0]
-                    * exp_time
-                    + dither_count * dither_time
-                    + self.apogee.utrReadState[2] * self.apogee.utrReadTime[0])
+                                 * exp_time
+                                 + dither_count * dither_time
+                                 + self.apogee.utrReadState[2] *
+                                 self.apogee.utrReadTime[0])
             self.remaining_time = total_exps * exp_time - self.exp_t_passed
             self.total_time = (self.sop.doApogeeBossScience_nDither[1]
-                    * exp_time)
+                               * exp_time)
             self.timer_bar.setValue(newValue=self.remaining_time / 60, newMin=0,
                                     newMax=self.total_time / 60)
             self.call_func = 'BHM Lead'
@@ -131,25 +136,27 @@ class ScriptClass(object):
                   ' Remaining exps: {}'
                   ' Exp time: {}'
                   ' Progress: {} / {}'.format(remaining_exps, exp_time,
-                                     self.remaining_time, self.total_time))
+                                              self.remaining_time,
+                                              self.total_time))
 
         self.set_timer()
 
     def calc_apogee_boss_science_time(self, keyVar):
         remaining_exps = (self.sop.doApogeeBossScience_nDither[1]
-                           - self.sop.doApogeeBossScience_nDither[0])
+                          - self.sop.doApogeeBossScience_nDither[0])
         total_exps = self.sop.doApogeeBossScience_nDither[1]
         dither_count = self.sop.apogeeDitherSet[1]
         exp_time = np.max(self.sop.doBossScience_expTime) + 60
         dither_time = np.max(self.sop.doApogeeScience_expTime)
 
         self.exp_t_passed = (self.sop.doApogeeBossScience_nDither[0]
-                * exp_time
-                + dither_count * dither_time
-                + self.apogee.utrReadState[2] * self.apogee.utrReadTime[0])
+                             * exp_time
+                             + dither_count * dither_time
+                             + self.apogee.utrReadState[2] *
+                             self.apogee.utrReadTime[0])
         self.remaining_time = total_exps * exp_time - self.exp_t_passed
         self.total_time = (self.sop.doApogeeBossScience_nDither[1]
-                * exp_time)
+                           * exp_time)
         self.timer_bar.setValue(newValue=self.remaining_time / 60, newMin=0,
                                 newMax=self.total_time / 60)
         self.call_func = 'BHM Lead'
@@ -157,9 +164,8 @@ class ScriptClass(object):
               ' Remaining exps: {}'
               ' Exp time: {}'
               ' Progress: {} / {}'.format(remaining_exps, exp_time,
-                                 self.remaining_time, self.total_time))
+                                          self.remaining_time, self.total_time))
         self.set_timer()
-
 
     def set_timer(self):
         """ Russel's timer"""
@@ -172,7 +178,7 @@ class ScriptClass(object):
         else:
             min_left = self.remaining_time / 60.0
             self.label_wdg.set("{}: {:6.1f} min".format(
-                               self.call_func, min_left))
+                self.call_func, min_left))
             if min_left > self.minAlert:
                 fgInd = 1
                 self.alert = True
@@ -195,4 +201,3 @@ class ScriptClass(object):
 
     def end(self, sr):
         self.timer.cancel()
-

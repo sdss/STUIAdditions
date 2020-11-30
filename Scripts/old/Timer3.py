@@ -13,9 +13,11 @@ History:
    sopModel.doApogeeMangaSequence_ditherSeq[0]  in init section
 """
 
-import os.path
-import time
 import Tkinter
+import os.path
+
+import time
+
 import RO.Astro.Tm
 import RO.Comm
 import RO.OS

@@ -1,14 +1,17 @@
 import numpy
-from RO.Constants import sevWarning, sevError
+
 import RO.Wdg
 import TUI.Models
+from RO.Constants import sevWarning
 
 MaxPosErr = 10
+
 
 class SpecInfo(object):
     """Information about collimation motors for one spectrograph ("sp1" or "sp2")
     """
-    SliceDict = dict(sp1=slice(0,3), sp2=slice(3,6))
+    SliceDict = dict(sp1=slice(0, 3), sp2=slice(3, 6))
+
     def __init__(self, spec, bossModel):
         """Construct a SliceInfo
         
@@ -28,12 +31,13 @@ class SpecInfo(object):
         try:
             self.slice = self.SliceDict[spec]
         except KeyError:
-            raise RuntimeError("unrecognized spec=%r; must be one of %r" % (spec, list(self.SliceDict.keys())))
+            raise RuntimeError("unrecognized spec=%r; must be one of %r" % (
+            spec, list(self.SliceDict.keys())))
         self.posList = []
         self.desPosList = []
         self.posErrList = []
         self.statusList = []
-    
+
     def addPos(self):
         """Add a position to posList
         
@@ -48,7 +52,7 @@ class SpecInfo(object):
         else:
             self.desPosList.append(numpy.copy(pos))
         return pos
-    
+
     def addDesPos(self, a, b, c):
         """Add a new desired position based on a, b, c delta positions
         
@@ -58,7 +62,7 @@ class SpecInfo(object):
         desPos = prevDesPos + (a, b, c)
         self.desPosList.append(desPos)
         return desPos
-    
+
     def addStatus(self):
         """Add current status to list from boss motorStatus keyword
         
@@ -68,49 +72,59 @@ class SpecInfo(object):
         self.statusList.append(status)
         return status
 
+
 class ScriptClass(object):
     """Check spectrograph collimator motors by moving back and forth
     """
+
     def __init__(self, sr):
         """Construct a script to test collimator motors
         """
         self.bossModel = TUI.Models.getModel("boss")
-        self.desOnBits  = 0x00 # I'd prefer 0x01 motor stopped, but it's not reliably on after a move!
-        self.desOffBits = 0x52 # find edge | slew mode | limit switch
+        self.desOnBits = 0x00  # I'd prefer 0x01 motor stopped, but it's not reliably on after a move!
+        self.desOffBits = 0x52  # find edge | slew mode | limit switch
         self.logWdg = RO.Wdg.LogWdg(
-            master = sr.master,
-            width = 35,
-            height = 42,
+            master=sr.master,
+            width=35,
+            height=42,
         )
         self.logWdg.grid(row=0, column=0, sticky="news")
         self.specList = list(SpecInfo.SliceDict.keys())
         self.specInfoDict = dict()
         for spec in self.specList:
-            self.specInfoDict[spec] = SpecInfo(spec=spec, bossModel=self.bossModel)
-    
+            self.specInfoDict[spec] = SpecInfo(spec=spec,
+                                               bossModel=self.bossModel)
+
     def run(self, sr):
         """For each axis move the collimator motors back and forth and check for success
         """
         for spec, specInfo in self.specInfoDict.items():
             startPos = specInfo.addPos()
-            self.logWdg.addMsg("%s start position: %s" % (spec, " ".join(str(val) for val in startPos)))
-            
+            self.logWdg.addMsg("%s start position: %s" % (
+            spec, " ".join(str(val) for val in startPos)))
+
             for mult in (1, -1):
                 for a in (0, 1000):
                     for b in (0, 1000):
                         for c in (0, 1000):
-                            yield self.waitMove(sr, spec=spec, a=a*mult, b=b*mult, c=c*mult)
-            endPos = specInfo.posList[-1] # waitMove calls addPos after the move, so posList is current
-            self.logWdg.addMsg("%s end position: %s" % (spec, " ".join(str(val) for val in endPos)))
+                            yield self.waitMove(sr, spec=spec, a=a * mult,
+                                                b=b * mult, c=c * mult)
+            endPos = specInfo.posList[
+                -1]  # waitMove calls addPos after the move, so posList is current
+            self.logWdg.addMsg("%s end position: %s" % (
+            spec, " ".join(str(val) for val in endPos)))
             posErrArr = numpy.array(specInfo.posErrList, dtype=float)
             meanPosErr = numpy.mean(posErrArr, axis=0)
             stdDevPosErr = numpy.std(posErrArr, axis=0)
             maxPosErr = numpy.max(numpy.abs(posErrArr), axis=0)
-            self.logWdg.addMsg("%s mean pos err=%s" % (spec, " ".join("%0.1f" % (val,) for val in meanPosErr)))
-            self.logWdg.addMsg("%s std dev pos err=%s" % (spec, " ".join("%0.1f" % (val,) for val in stdDevPosErr)))
-            self.logWdg.addMsg("%s max pos err=%s" % (spec, " ".join("%0.1f" % (val,) for val in maxPosErr)))
+            self.logWdg.addMsg("%s mean pos err=%s" % (
+            spec, " ".join("%0.1f" % (val,) for val in meanPosErr)))
+            self.logWdg.addMsg("%s std dev pos err=%s" % (
+            spec, " ".join("%0.1f" % (val,) for val in stdDevPosErr)))
+            self.logWdg.addMsg("%s max pos err=%s" % (
+            spec, " ".join("%0.1f" % (val,) for val in maxPosErr)))
             self.logWdg.addMsg("")
-    
+
     def waitMove(self, sr, spec, a, b, c):
         """Move motors and record desired position, motor status, actual position and position error
         """
@@ -119,17 +133,21 @@ class ScriptClass(object):
         self.logWdg.addMsg("%s a=%s b=%s c=%s" % (spec, a, b, c))
         specInfo = self.specInfoDict[spec]
         specInfo.addDesPos(a, b, c)
-            
+
         cmdStr = "moveColl spec=%s a=%s b=%s c=%s" % (spec, a, b, c)
         yield sr.waitCmd(actor="boss", cmdStr=cmdStr)
-        
+
         status = specInfo.addStatus()
-        stateOK = numpy.logical_and(status & self.desOffBits == 0, status & self.desOnBits  == self.desOnBits)
+        stateOK = numpy.logical_and(status & self.desOffBits == 0,
+                                    status & self.desOnBits == self.desOnBits)
         if not numpy.all(stateOK):
             motorStateStr = " ".join(("0x%x" % (val) for val in status))
-            self.logWdg.addMsg("%s bad motor state: %s" % (spec, motorStateStr), severity=sevWarning)
-        
+            self.logWdg.addMsg("%s bad motor state: %s" % (spec, motorStateStr),
+                               severity=sevWarning)
+
         specInfo.addPos()
         posErr = specInfo.posErrList[-1]
         if numpy.any(numpy.abs(posErr) > MaxPosErr):
-            self.logWdg.addMsg("%s pos error > %s: %s" % (spec, MaxPosErr, posErr), severity=sevWarning)
+            self.logWdg.addMsg(
+                "%s pos error > %s: %s" % (spec, MaxPosErr, posErr),
+                severity=sevWarning)

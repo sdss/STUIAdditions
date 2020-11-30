@@ -33,10 +33,11 @@ Version history:
     to PEP8, converted time methods to static
 """
 
+import time
+
+import RO.Astro.Tm
 import RO.Wdg
 import TUI.Models
-import time
-import RO.Astro.Tm
 
 encl = ""
 loadCart = ""
@@ -134,7 +135,7 @@ class ScriptClass(object):
         self.rMeanOffset = dict()
         self.bMeanOffset = dict()
 
-        self.spNumList = ("1", )  # "2")
+        self.spNumList = ("1",)  # "2")
         for spNum in self.spNumList:
             residKey = getattr(self.hartmannModel, "sp%sResiduals" % spNum)
 

@@ -1,6 +1,7 @@
+import matplotlib as mpl
+
 import RO.Wdg
 import TUI
-import matplotlib as mpl
 
 
 class ScriptClass(object):

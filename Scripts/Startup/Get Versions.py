@@ -12,149 +12,157 @@
 10/08/2015  EM: deleted sdssProcedures version as we keep wikki and had STUI hand with HTTP
 '''
 
+import os
+from datetime import datetime
+
 import RO.Wdg
 import TUI.Models
 import TUI.Version
-from datetime import datetime
-import os
+
 
 class ScriptClass(object):
     def __init__(self, sr):
         # if True, run in debug-only mode 
         # if False, real time run
         sr.debug = False
-        self.name="Get Versions"        
+        self.name = "Get Versions"
         sr.master.winfo_toplevel().wm_resizable(True, True)
 
-        self.sr=sr
-        
-        self.logWdg = RO.Wdg.LogWdg(master=sr.master, width=30,  height =31,)
+        self.sr = sr
+
+        self.logWdg = RO.Wdg.LogWdg(master=sr.master, width=30, height=31, )
         self.logWdg.grid(row=0, column=0, sticky="news")
         sr.master.rowconfigure(0, weight=1)
         sr.master.columnconfigure(0, weight=1)
-        self.logWdg.text.tag_config("a", foreground="magenta") 
-        self.logWdg.text.tag_config("g", foreground="darkblue") 
+        self.logWdg.text.tag_config("a", foreground="magenta")
+        self.logWdg.text.tag_config("g", foreground="darkblue")
 
-        fs="12"   # font size
-        ft="Monaco" # "Courier"  #"Menlo"  # font type
-        self.logWdg.text.tag_config("cur", font=(ft,fs))        
-        self.width=13
+        fs = "12"  # font size
+        ft = "Monaco"  # "Courier"  #"Menlo"  # font type
+        self.logWdg.text.tag_config("cur", font=(ft, fs))
+        self.width = 13
 
         self.logWdg.text.tag_config("branch", foreground="blue")
         self.logWdg.text.tag_config("trunk", foreground="magenta")
-         
-#        fidCrossKeyVar = getattr(self.mcpModel, "%sFiducialCrossing" % (axisName.lower()))
-#        def fidCrossCallFunc(fidCrossKeyVar, axisName=axisName):
-#                self.axisFiducialCrossingCallback(axisName, fidCrossKeyVar)
-#        fidCrossKeyVar.addCallback(fidCrossCallFunc, callNow=False)
+
+    #        fidCrossKeyVar = getattr(self.mcpModel, "%sFiducialCrossing" % (axisName.lower()))
+    #        def fidCrossCallFunc(fidCrossKeyVar, axisName=axisName):
+    #                self.axisFiducialCrossingCallback(axisName, fidCrossKeyVar)
+    #        fidCrossKeyVar.addCallback(fidCrossCallFunc, callNow=False)
 
     def getVer1Print(self, act, ver, defVal):
-        act=act[:self.width]
-        ss="%s : %s" % (act.ljust(self.width), ver)
-        tags=["cur"]
-        if "branch" in ver: tags.append("branch")  
-        if "trunk" in ver:  tags.append("trunk")  
-        if defVal==ver:
-          self.logWdg.addMsg("%s"% (ss), severity=RO.Constants.sevError, tags=tags)
-        else:  
-          self.logWdg.addMsg("%s" % (ss), tags=tags)
-    
+        act = act[:self.width]
+        ss = "%s : %s" % (act.ljust(self.width), ver)
+        tags = ["cur"]
+        if "branch" in ver: tags.append("branch")
+        if "trunk" in ver:  tags.append("trunk")
+        if defVal == ver:
+            self.logWdg.addMsg("%s" % (ss), severity=RO.Constants.sevError,
+                               tags=tags)
+        else:
+            self.logWdg.addMsg("%s" % (ss), tags=tags)
+
     def getVer1(self, act, defVal="FAILED"):
-        sr=self.sr        
-        actModel =TUI.Models.getModel(act)
+        sr = self.sr
+        actModel = TUI.Models.getModel(act)
         ver = sr.getKeyVar(actModel.version, ind=0, defVal=defVal)
         self.getVer1Print(act, ver, defVal)
-                            
+
     def run(self, sr):
-      tm=datetime.utcnow().strftime("%D, %H:%M:%S")
-      defVal="  FAILED"
+        tm = datetime.utcnow().strftime("%D, %H:%M:%S")
+        defVal = "  FAILED"
 
-      self.logWdg.clearOutput()  
-      self.logWdg.addMsg("%s, %s" % (self.name, tm), tags=["a"]) 
-      self.logWdg.addMsg("  -- STUI software: ", tags=["g"])
-      self.getVer1Print("STUI", TUI.Version.VersionName, "")
+        self.logWdg.clearOutput()
+        self.logWdg.addMsg("%s, %s" % (self.name, tm), tags=["a"])
+        self.logWdg.addMsg("  -- STUI software: ", tags=["g"])
+        self.getVer1Print("STUI", TUI.Version.VersionName, "")
 
-#    if connected? 
-  #    tuiModel = TUI.Models.getModel("tui")
-  #    conn=tuiModel.getConnection()
-  #    if conn:
-  #         self.logWdg.addMsg("    STUI is not connected", severity=self.redWarn) 
-  #         defVal="  n/a"
-           
-      self.getVer1("alerts")
-      self.getVer1("apo")
-      self.getVer1("boss")
-      
-      bossModel = TUI.Models.getModel("boss")
-      #spDaq = sr.getKeyVar(bossModel.daqVersion, ind=0,defVal=defVal)
-      spMv = sr.getKeyVar(bossModel.specMechVersion, ind=0, defVal=defVal)
-      #self.getVer1Print("-boss.daq", spDaq,defVal)
-      self.getVer1Print("-boss.specMechVersion", spMv, defVal)
+        #    if connected?
+        #    tuiModel = TUI.Models.getModel("tui")
+        #    conn=tuiModel.getConnection()
+        #    if conn:
+        #         self.logWdg.addMsg("    STUI is not connected", severity=self.redWarn)
+        #         defVal="  n/a"
 
-      self.getVer1("gcamera")
-      self.getVer1("guider")
-      self.getVer1("hartmann")
-      self.getVer1("hub")
+        self.getVer1("alerts")
+        self.getVer1("apo")
+        self.getVer1("boss")
 
-      mcpModel = TUI.Models.getModel("mcp")
-      mcpv = sr.getKeyVar(mcpModel.mcpVersion, ind=0, defVal=defVal)
-      self.getVer1Print("mcp", mcpv, defVal)
-            
-      mcpPlc = sr.getKeyVar(mcpModel.plcVersion, ind=0, defVal=defVal )
-      self.getVer1Print("-mcp.plc", str(mcpPlc), defVal)
-                
-      self.getVer1Print("-mcp.azFiducialVersion", \
-           sr.getKeyVar(mcpModel.azFiducialVersion, ind=0, defVal=defVal), defVal)
-      self.getVer1Print("-mcp.altFiducialVersion", \
-           sr.getKeyVar(mcpModel.altFiducialVersion, ind=0, defVal=defVal), defVal)
-      self.getVer1Print("-mcp.rotFiducialVersion", \
-           sr.getKeyVar(mcpModel.rotFiducialVersion, ind=0, defVal=defVal), defVal)
-           
-      self.getVer1("platedb")
-      self.getVer1("sop")
-      
-# see Russell's instruction for STUI 5.2
-      tccModel = TUI.Models.getModel("tcc")
-      yield sr.waitCmd(actor="tcc", 
-             cmdStr="show version", 
-          #   keyVars=[tccModel.text],
-             keyVars=[tccModel.version], 
-             checkFail =False,)
-      cmdVar = sr.value
-      if cmdVar.didFail: 
-            tccVers=defVal
-      else: 
+        bossModel = TUI.Models.getModel("boss")
+        # spDaq = sr.getKeyVar(bossModel.daqVersion, ind=0,defVal=defVal)
+        spMv = sr.getKeyVar(bossModel.specMechVersion, ind=0, defVal=defVal)
+        # self.getVer1Print("-boss.daq", spDaq,defVal)
+        self.getVer1Print("-boss.specMechVersion", spMv, defVal)
+
+        self.getVer1("gcamera")
+        self.getVer1("guider")
+        self.getVer1("hartmann")
+        self.getVer1("hub")
+
+        mcpModel = TUI.Models.getModel("mcp")
+        mcpv = sr.getKeyVar(mcpModel.mcpVersion, ind=0, defVal=defVal)
+        self.getVer1Print("mcp", mcpv, defVal)
+
+        mcpPlc = sr.getKeyVar(mcpModel.plcVersion, ind=0, defVal=defVal)
+        self.getVer1Print("-mcp.plc", str(mcpPlc), defVal)
+
+        self.getVer1Print("-mcp.azFiducialVersion", \
+                          sr.getKeyVar(mcpModel.azFiducialVersion, ind=0,
+                                       defVal=defVal), defVal)
+        self.getVer1Print("-mcp.altFiducialVersion", \
+                          sr.getKeyVar(mcpModel.altFiducialVersion, ind=0,
+                                       defVal=defVal), defVal)
+        self.getVer1Print("-mcp.rotFiducialVersion", \
+                          sr.getKeyVar(mcpModel.rotFiducialVersion, ind=0,
+                                       defVal=defVal), defVal)
+
+        self.getVer1("platedb")
+        self.getVer1("sop")
+
+        # see Russell's instruction for STUI 5.2
+        tccModel = TUI.Models.getModel("tcc")
+        yield sr.waitCmd(actor="tcc",
+                         cmdStr="show version",
+                         #   keyVars=[tccModel.text],
+                         keyVars=[tccModel.version],
+                         checkFail=False, )
+        cmdVar = sr.value
+        if cmdVar.didFail:
+            tccVers = defVal
+        else:
             tccVers = sr.value.getLastKeyVarData(tccModel.version)[0]
-      self.getVer1Print("tcc", tccVers, defVal)
-      
-      defVal1="not availble"
+        self.getVer1Print("tcc", tccVers, defVal)
 
-      apogeeModel = TUI.Models.getModel("apogee")
-      apogeeVer = sr.getKeyVar(apogeeModel.version, ind=0, defVal=defVal1)
-      self.getVer1Print("apogee", apogeeVer, "")
-            
-      apogeecalModel = TUI.Models.getModel("apogeecal")
-      apogeecalVer = sr.getKeyVar(apogeecalModel.version, ind=0, defVal=defVal1)
-      self.getVer1Print("apogeecal", apogeecalVer, "")
-    
-      self.getVer1("apogeeql")
+        defVal1 = "not availble"
 
-      #self.logWdg.addMsg("  -- Other software", tags=["g","cur"])
-      procVer=defVal 
-      
-      vPath="/Library/Application Support/STUIAdditions/Scripts/APO-local/version.txt"
-      if  os.path.isfile(vPath):             
-          vFile=open(vPath, "r");  scrVer=vFile.read(); vFile.close()
-      else: scrVer="not availble"
-      self.getVer1Print("APO-local", scrVer, "") 
+        apogeeModel = TUI.Models.getModel("apogee")
+        apogeeVer = sr.getKeyVar(apogeeModel.version, ind=0, defVal=defVal1)
+        self.getVer1Print("apogee", apogeeVer, "")
 
-    def end(self, sr):        
-      self.logWdg.addMsg("  -- done --", tags=["g","cur"])
-    
-    
-  #    yield sr.waitCmd(actor="apo", cmdStr="version",
-  #          keyVars=[apoModel.version],checkFail = False,)
-  #    cmdVar = sr.value
-  #    if cmdVar.didFail:  apv=defVal 
-  #    else:   apv = sr.value.getLastKeyVarData(apoModel.version)[0] 
+        apogeecalModel = TUI.Models.getModel("apogeecal")
+        apogeecalVer = sr.getKeyVar(apogeecalModel.version, ind=0,
+                                    defVal=defVal1)
+        self.getVer1Print("apogeecal", apogeecalVer, "")
 
+        self.getVer1("apogeeql")
+
+        # self.logWdg.addMsg("  -- Other software", tags=["g","cur"])
+        procVer = defVal
+
+        vPath = "/Library/Application Support/STUIAdditions/Scripts/APO-local/version.txt"
+        if os.path.isfile(vPath):
+            vFile = open(vPath, "r");
+            scrVer = vFile.read();
+            vFile.close()
+        else:
+            scrVer = "not availble"
+        self.getVer1Print("APO-local", scrVer, "")
+
+    def end(self, sr):
+        self.logWdg.addMsg("  -- done --", tags=["g", "cur"])
+
+#    yield sr.waitCmd(actor="apo", cmdStr="version",
+#          keyVars=[apoModel.version],checkFail = False,)
+#    cmdVar = sr.value
+#    if cmdVar.didFail:  apv=defVal
+#    else:   apv = sr.value.getLastKeyVarData(apoModel.version)[0]

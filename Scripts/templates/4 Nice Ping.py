@@ -1,5 +1,6 @@
 import RO.Constants
 
+
 class ScriptClass(object):
     """Tutorial script to test the aliveness of various actors.
 
@@ -7,12 +8,13 @@ class ScriptClass(object):
     - It outputs the results to a log window
     - It uses checkFail=False to continue and check all actors even if one command fails.
     """
+
     def __init__(self, sr):
         """Display the exposure status panel.
         """
         # if True, run in debug-only mode (which doesn't send anything to the hub, it just pretends)
         sr.debug = False
-        
+
         # Set the command list here so we can set the height of the log window
         # to match the number of commands, to avoid the need to scroll.
         # If you have so many commands that the window gets too tall then use a fixed height (e.g. 20)
@@ -27,15 +29,15 @@ class ScriptClass(object):
             "sop ping",
             "tcc show time",
         )
-        
+
         # log window to display the results of each command
         self.logWdg = RO.Wdg.LogWdg(
-            master = sr.master,
-            width = 30,
-            height = len(self.actorCmdList) + 1, # avoids scrolling
+            master=sr.master,
+            width=30,
+            height=len(self.actorCmdList) + 1,  # avoids scrolling
         )
         self.logWdg.grid(row=0, column=0, sticky="news")
-    
+
     def run(self, sr):
         """Run the script"""
         for actorCmd in self.actorCmdList:
@@ -46,12 +48,13 @@ class ScriptClass(object):
             # but actor, cmdStr = demands exactly two
             actor, cmdStr = actorCmd.split(None, 1)
             yield sr.waitCmd(
-                actor = actor,
-                cmdStr = cmdStr,
-                checkFail = False,
+                actor=actor,
+                cmdStr=cmdStr,
+                checkFail=False,
             )
             cmdVar = sr.value
             if cmdVar.didFail:
-                self.logWdg.addMsg("%s FAILED" % (actor,), severity=RO.Constants.sevError)
+                self.logWdg.addMsg("%s FAILED" % (actor,),
+                                   severity=RO.Constants.sevError)
             else:
                 self.logWdg.addMsg("%s OK" % (actor,))

@@ -30,12 +30,13 @@ some day in the past:  added 4th window for hartmann output.
     numbers
 """
 
+import numpy as np
+import time
+
 import RO.Wdg
 import TUI.Models
-import time
-import numpy as np
 
-__version__ = '3.0.0'
+__version__ = '3.0.1'
 
 
 # noinspection PyPep8Naming
@@ -139,7 +140,7 @@ class ScriptClass(object, ):
         self.logWdg4.addMsg("--- Hartmann ---", tags=["cur", "c"])
         self.logWdg4.addMsg('{:<5} {:<9} {:<5} {:<5} {:<5} {:<7} {:<4}'
                             ''.format('Time', ' Cart', 'TSP1', ' R1', ' B1',
-                                       'Move1', 'B1Resid'),
+                                      'Move1', 'B1Resid'),
                             tags=["cur", "c"])
         # sline = "%s     %s    %s" % (14 * '-', 28 * "-", 28 * "-")
 
@@ -163,12 +164,12 @@ class ScriptClass(object, ):
         self.hartmannModel.r1PistonMove.addCallback(self.r1PistonMoveFun,
                                                     callNow=False)
         # self.hartmannModel.r2PistonMove.addCallback(self.r2PistonMoveFun,
-                                                    # callNow=False)
+        # callNow=False)
 
         self.hartmannModel.b1RingMove.addCallback(self.b1RingMoveFun,
                                                   callNow=False)
         # self.hartmannModel.b2RingMove.addCallback(self.b2RingMoveFun,
-                                                  # callNow=False)
+        # callNow=False)
         self.hartmannModel.sp1AverageMove.addCallback(self.sp1AverageMoveFun,
                                                       callNow=False)
         # self.hartmannModel.sp2AverageMove.addCallback(self.sp2AverageMoveFun,
@@ -259,7 +260,8 @@ class ScriptClass(object, ):
         # tags=["c", "cur"])
         self.logWdg4.addMsg('{:<5} {:<9} {:>4.1f} {:>5.0f} {:>5.1f} {:>5.0f}'
                             ' {:>7.1f}'.format(tm, cart,
-                float(self.bossModel.sp1Temp[0]), *hart_data), 
+                                               float(self.bossModel.sp1Temp[0]),
+                                               *hart_data),
                             tags=["cur", "c"])
 
     def updateApogeeExpos(self, keyVar):
@@ -321,7 +323,7 @@ class ScriptClass(object, ):
         tm = self.getTAITimeStr()
         try:
             scale = float(sr.getKeyVar(self.tccModel.scaleFac, ind=0,
-                defVal=1.0))
+                                       defVal=1.0))
         except ValueError:
             scale = np.nan
         try:
@@ -341,7 +343,7 @@ class ScriptClass(object, ):
 
         try:
             primOr = int(
-                    sr.getKeyVar(self.tccModel.primOrient, ind=0, defVal=9999))
+                sr.getKeyVar(self.tccModel.primOrient, ind=0, defVal=9999))
         except ValueError:
             primOr = np.nan
         try:
@@ -395,7 +397,7 @@ class ScriptClass(object, ):
             guideOff2 = np.nan
         try:
             calibOff0 = float(
-                    RO.CnvUtil.posFromPVT(self.tccModel.calibOff[0])) * 3600
+                RO.CnvUtil.posFromPVT(self.tccModel.calibOff[0])) * 3600
         except ValueError:
             califOff0 = np.nan
         try:
@@ -413,17 +415,17 @@ class ScriptClass(object, ):
 
         try:
             fwhm = float(
-                    sr.getKeyVar(self.guiderModel.seeing, ind=0, defVal=99.9))
+                sr.getKeyVar(self.guiderModel.seeing, ind=0, defVal=99.9))
         except ValueError:
             fwhm = np.nan
         try:
             guideRMS = float(sr.getKeyVar(self.guiderModel.guideRMS, ind=1,
-                                      defVal=99.999))
+                                          defVal=99.999))
         except ValueError:
             guideRMS = np.nan
         try:
             airT = float(
-                    sr.getKeyVar(self.apoModel.airTempPT, ind=0, defVal=-99))
+                sr.getKeyVar(self.apoModel.airTempPT, ind=0, defVal=-99))
         except ValueError:
             airT = np.nan
         try:
@@ -487,4 +489,3 @@ class ScriptClass(object, ):
     def run(self, sr):
         self.record(sr, "")
         self.print_hartmann_to_log()
-

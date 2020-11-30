@@ -33,34 +33,35 @@ History:
 2015-04-29 ROwen    Start conversion for STUI
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import collections
+import Tkinter
 import glob
-import os
 
-import numpy
+import collections
 import matplotlib
 import matplotlib.colors
+import numpy
+import os
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import Tkinter
 
 import RO.CanvasUtil
 import RO.CnvUtil
 import RO.MathUtil
-from RO.ScriptRunner import ScriptError
-from RO.Comm.Generic import Timer
-from RO.Astro.Tm import isoDateTimeFromPySec
 import RO.OS
 import RO.StringUtil
 import RO.Wdg
 # import TUI.TUIModel
 # import TUI.TCC.UserModel
 import TUI.Models
+from RO.Astro.Tm import isoDateTimeFromPySec
+from RO.Comm.Generic import Timer
+from RO.ScriptRunner import ScriptError
+
 # import TUI.Inst.ExposeModel
 # import TUI.Guide.GuideModel
 
 Debug = False
 
-MeanLat = 32.780361 # latitude of telescope (deg)
+MeanLat = 32.780361  # latitude of telescope (deg)
 
 HelpURL = "Scripts/BuiltInScripts/PointingData.html"
 
@@ -71,9 +72,10 @@ EntryWidth = 6
 # See TCSpk manual section 3.1 for the difference between the left and right Nasmyth mount
 # Note that the NA1 port has the Echelle, and hence no rotator
 InstPosRotDict = dict(
-    na2 = "ROTL",
-    tr2 = "ROTTEL",
+    na2="ROTL",
+    tr2="ROTTEL",
 )
+
 
 class InstActors(object):
     def __init__(self, instName, exposeActor, guideActor):
@@ -92,8 +94,10 @@ class ListOfIntEntry(RO.Wdg.StrEntry):
         intSet will probably not match the current text while a user is editing the field!
     - maxVal: maximum allowed value
     """
+
     def __init__(self, master, maxVal=0, **kwargs):
-        RO.Wdg.StrEntry.__init__(self, master, partialPattern = r"[ 0-9]*$", **kwargs)
+        RO.Wdg.StrEntry.__init__(self, master, partialPattern=r"[ 0-9]*$",
+                                 **kwargs)
         self.intSet = set()
         self.maxVal = int(maxVal)
 
@@ -106,7 +110,8 @@ class ListOfIntEntry(RO.Wdg.StrEntry):
         if self.intSet:
             currMax = max(self.intSet)
             if maxVal < currMax:
-                raise ValueError("desired max too small; %s < %s = curr max" % (maxVal, currMax))
+                raise ValueError("desired max too small; %s < %s = curr max" % (
+                maxVal, currMax))
         self.maxVal = maxVal
 
     def neatenDisplay(self):
@@ -165,6 +170,7 @@ class ListOfIntEntry(RO.Wdg.StrEntry):
 class ScriptClass(object):
     """Widget to collect pointing data
     """
+
     def __init__(self, sr):
         """Construct a ScriptClass
 
@@ -195,54 +201,54 @@ class ScriptClass(object):
         ctrlFrame1 = Tkinter.Frame(sr.master)
         ctrlGr1 = RO.Wdg.Gridder(ctrlFrame1)
         self.guiderNameWdg = RO.Wdg.StrLabel(
-            master = ctrlFrame1,
-            anchor = "w",
-            helpText = "Guider that will be used to measure pointing error",
+            master=ctrlFrame1,
+            anchor="w",
+            helpText="Guider that will be used to measure pointing error",
         )
-#        ctrlGr1.gridWdg(False, self.guiderNameWdg, colSpan=2, sticky="ew")
+        #        ctrlGr1.gridWdg(False, self.guiderNameWdg, colSpan=2, sticky="ew")
         self._gridDict = dict()
         gridFrame = Tkinter.Frame(ctrlFrame1)
         self.gridWdg = RO.Wdg.OptionMenu(
-            master = gridFrame,
+            master=gridFrame,
             # don't set a label, as this will be displayed instead of the current value
-            callFunc = self.setGrid,
-            items = (),
-            postCommand = self._fillGridsMenu,
-            helpText = "az/alt grid",
-            helpURL = self.helpURL,
+            callFunc=self.setGrid,
+            items=(),
+            postCommand=self._fillGridsMenu,
+            helpText="az/alt grid",
+            helpURL=self.helpURL,
         )
         self.gridWdg.pack(side="left")
         self.numStarsWdg = RO.Wdg.StrLabel(
-            master = gridFrame,
-            anchor = "w",
-            helpText = "number of stars in the grid",
-            helpURL = self.helpURL,
+            master=gridFrame,
+            anchor="w",
+            helpText="number of stars in the grid",
+            helpURL=self.helpURL,
         )
         self.numStarsWdg.pack(side="left")
         ctrlGr1.gridWdg("Grid", gridFrame, colSpan=5, sticky="w")
         self.minMagWdg = RO.Wdg.FloatEntry(
-            master = ctrlFrame1,
-            defValue = 4.0,
-            width = EntryWidth,
-            helpText = "minimum magnitude (max brightness)",
-            helpURL = self.helpURL,
+            master=ctrlFrame1,
+            defValue=4.0,
+            width=EntryWidth,
+            helpText="minimum magnitude (max brightness)",
+            helpURL=self.helpURL,
         )
         ctrlGr1.gridWdg("Min Mag", self.minMagWdg)
         self.maxMagWdg = RO.Wdg.FloatEntry(
-            master = ctrlFrame1,
-            defValue = 6.0,
-            width = EntryWidth,
-            helpText = "maximum magnitude (min brightness)",
-            helpURL = self.helpURL,
+            master=ctrlFrame1,
+            defValue=6.0,
+            width=EntryWidth,
+            helpText="maximum magnitude (min brightness)",
+            helpURL=self.helpURL,
         )
         ctrlGr1.gridWdg("Max Mag", self.maxMagWdg)
 
         self.rotTypeWdg = RO.Wdg.OptionMenu(
-            master = ctrlFrame1,
-            items = ("Object", "Horizon", "Mount"),
-            defValue = "Object",
-            helpText = "rotation type",
-            helpURL = self.helpURL,
+            master=ctrlFrame1,
+            items=("Object", "Horizon", "Mount"),
+            defValue="Object",
+            helpText="rotation type",
+            helpURL=self.helpURL,
         )
         ctrlGr1.gridWdg("Rot Type", self.rotTypeWdg)
 
@@ -252,35 +258,35 @@ class ScriptClass(object):
         ctrlGr1.setDefCol(3)
         ctrlGr1.setNextRow(1)
         self.numExpWdg = RO.Wdg.IntEntry(
-            master = ctrlFrame1,
-            label = "Num Exp",
-            defValue = 1,
-            minValue = 1,
-            width = EntryWidth,
-            helpText = "number of exposures (and corrections) per star",
-            helpURL = self.helpURL,
+            master=ctrlFrame1,
+            label="Num Exp",
+            defValue=1,
+            minValue=1,
+            width=EntryWidth,
+            helpText="number of exposures (and corrections) per star",
+            helpURL=self.helpURL,
         )
         ctrlGr1.gridWdg(self.numExpWdg.label, self.numExpWdg)
         self.expTimeWdg = RO.Wdg.FloatEntry(
-            master = ctrlFrame1,
-            label = "Exp Time",
-            defValue = 5.0,
-            minValue = 0,
-            defFormat = "%.1f",
-            width = EntryWidth,
-            helpText = "exposure time",
-            helpURL = self.helpURL,
+            master=ctrlFrame1,
+            label="Exp Time",
+            defValue=5.0,
+            minValue=0,
+            defFormat="%.1f",
+            width=EntryWidth,
+            helpText="exposure time",
+            helpURL=self.helpURL,
         )
         ctrlGr1.gridWdg(self.expTimeWdg.label, self.expTimeWdg, "sec")
 
         self.settleTimeWdg = RO.Wdg.FloatEntry(
-            master = ctrlFrame1,
-            defValue = 2.0 if not sr.debug else 0.0,
-            minValue = 0.0,
-            defFormat = "%.1f",
-            width = EntryWidth,
-            helpText = "settling time after slewing to a new star (sec)",
-            helpURL = self.helpURL,
+            master=ctrlFrame1,
+            defValue=2.0 if not sr.debug else 0.0,
+            minValue=0.0,
+            defFormat="%.1f",
+            width=EntryWidth,
+            helpText="settling time after slewing to a new star (sec)",
+            helpURL=self.helpURL,
         )
         ctrlGr1.gridWdg("  Settling Time", self.settleTimeWdg, "sec  ")
 
@@ -294,29 +300,29 @@ class ScriptClass(object):
         btnFrame = Tkinter.Frame(ctrlFrame2)
 
         self.attendedModeWdg = RO.Wdg.Checkbutton(
-            master = btnFrame,
-            text = "Attended Mode",
-            defValue = True,
-            helpText = "pause if a star cannot be measured?",
-            helpURL = self.helpURL,
+            master=btnFrame,
+            text="Attended Mode",
+            defValue=True,
+            helpText="pause if a star cannot be measured?",
+            helpURL=self.helpURL,
         )
         self.attendedModeWdg.grid(row=0, column=0, sticky="")
 
         self.skipCurrStarWdg = RO.Wdg.Button(
-            master = btnFrame,
-            text = "Skip Current Star",
-            command = self.doSkipCurrStar,
-            helpText = "press to skip the current star",
-            helpURL = self.helpURL,
+            master=btnFrame,
+            text="Skip Current Star",
+            command=self.doSkipCurrStar,
+            helpText="press to skip the current star",
+            helpURL=self.helpURL,
         )
         self.skipCurrStarWdg.grid(row=0, column=1, sticky="")
 
         self.retryMissingWdg = RO.Wdg.Button(
-            master = btnFrame,
-            text = "Retry Missing",
-            command = self.doRetryMissing,
-            helpText = "press to retry all missing stars except stars to skip",
-            helpURL = self.helpURL,
+            master=btnFrame,
+            text="Retry Missing",
+            command=self.doRetryMissing,
+            helpText="press to retry all missing stars except stars to skip",
+            helpURL=self.helpURL,
         )
         self.retryMissingWdg.grid(row=0, column=2, sticky="")
         for i in range(3):
@@ -325,39 +331,42 @@ class ScriptClass(object):
         ctrlGr2.gridWdg(False, btnFrame, colSpan=8, sticky="w")
 
         self.missingStarsWdg = ListOfIntEntry(
-            master = ctrlFrame2,
-            readOnly = True,
-            borderwidth = 0,
-            helpText = "list of missing stars (read-only)",
-            helpURL = self.helpURL,
+            master=ctrlFrame2,
+            readOnly=True,
+            borderwidth=0,
+            helpText="list of missing stars (read-only)",
+            helpURL=self.helpURL,
         )
-        ctrlGr2.gridWdg("Missing Stars", self.missingStarsWdg, colSpan=8, sticky="ew")
+        ctrlGr2.gridWdg("Missing Stars", self.missingStarsWdg, colSpan=8,
+                        sticky="ew")
 
         self.starsToSkipWdg = ListOfIntEntry(
-            master = ctrlFrame2,
-            helpText = "list of stars to skip (pause to edit or press Skip Current Star)",
-            helpURL = self.helpURL,
+            master=ctrlFrame2,
+            helpText="list of stars to skip (pause to edit or press Skip Current Star)",
+            helpURL=self.helpURL,
         )
-        ctrlGr2.gridWdg("Stars to Skip", self.starsToSkipWdg, colSpan=8, sticky="ew")
+        ctrlGr2.gridWdg("Stars to Skip", self.starsToSkipWdg, colSpan=8,
+                        sticky="ew")
 
         self.starsToRetryWdg = ListOfIntEntry(
-            master = ctrlFrame2,
-            helpText = "list of stars to retry (pause to edit)",
-            helpURL = self.helpURL,
+            master=ctrlFrame2,
+            helpText="list of stars to retry (pause to edit)",
+            helpURL=self.helpURL,
         )
-        ctrlGr2.gridWdg("Stars to Retry", self.starsToRetryWdg, colSpan=8, sticky="ew")
+        ctrlGr2.gridWdg("Stars to Retry", self.starsToRetryWdg, colSpan=8,
+                        sticky="ew")
 
         self.dataIDWdg = RO.Wdg.StrLabel(
-            master = ctrlFrame2,
-            anchor = "w",
-            helpText = "ID of most recently saved star measurement",
+            master=ctrlFrame2,
+            anchor="w",
+            helpText="ID of most recently saved star measurement",
         )
         ctrlGr2.gridWdg("Saved Data ID", self.dataIDWdg, colSpan=8, sticky="ew")
 
         self.dataPathWdg = RO.Wdg.StrEntry(
-            master = ctrlFrame2,
-            readOnly = True,
-            helpText = "path to pointing data file",
+            master=ctrlFrame2,
+            readOnly=True,
+            helpText="path to pointing data file",
         )
         ctrlGr2.gridWdg(False, self.dataPathWdg, colSpan=8, sticky="ew")
 
@@ -404,7 +413,7 @@ class ScriptClass(object):
     def enableWdg(self, sr):
         """Enable or disable widgets, as appropriate
         """
-        isExecuting = self.sr.isExecuting # is running or paused
+        isExecuting = self.sr.isExecuting  # is running or paused
         isPaused = self.sr.isPaused
 
         # can only change grids if not executing (one grid must be used for the whole run)
@@ -435,7 +444,8 @@ class ScriptClass(object):
         meanLatDMS = RO.StringUtil.dmsStrFromDeg(MeanLat).split(":")
         meanLatDMSStr = " ".join(meanLatDMS)
         if len(meanLatDMS) != 3:
-            raise ScriptError("Bug: MeanLat=%r split into %r, not 3 fields" % (MeanLat, meanLatDMS))
+            raise ScriptError("Bug: MeanLat=%r split into %r, not 3 fields" % (
+            MeanLat, meanLatDMS))
 
         optionStr = "\n".join(": %s" % val for val in optionList)
 
@@ -476,7 +486,7 @@ class ScriptClass(object):
         if numVal is not None:
             return numVal
         raise self.sr.ScriptError(wdg.label + " not specified")
-    
+
     def getExposeCmdDict(self, doWindow=True, isFinal=False):
         """Get basic command arument dict for an expose command
         
@@ -487,18 +497,19 @@ class ScriptClass(object):
         - isFinal: if True then return parameters for final exposure
         """
         return dict(
-            actor = self.guideActor,
-            cmdStr = "ecamOn oneExposure" + self.formatExposeArgs(doWindow, isFinal=isFinal),
-            abortCmdStr = "abort",
+            actor=self.guideActor,
+            cmdStr="ecamOn oneExposure" + self.formatExposeArgs(doWindow,
+                                                                isFinal=isFinal),
+            abortCmdStr="abort",
         )
 
     def initAll(self):
         """Initialize variables, table and graph.
         """
         # initialize shared variables
-        self.windowIsInclusive = True # for guider and slitviewers
-        self.doWindow = True # to work around a guider bug where the image may not be full frame
-            # unless a window is explicitly specified
+        self.windowIsInclusive = True  # for guider and slitviewers
+        self.doWindow = True  # to work around a guider bug where the image may not be full frame
+        # unless a window is explicitly specified
         self.windowOrigin = 0
         self.doTakeFinalImage = False
         self.focDir = None
@@ -509,22 +520,26 @@ class ScriptClass(object):
         self.expTime = None
         self.absStarPos = None
         self.guideProbeCtrXY = None
-        self.window = None # LL pixel is 0, UL pixel is included
+        self.window = None  # LL pixel is 0, UL pixel is included
         self.currStarNum = 0
-        self.numStarsWritten = 0 # number of star data items written to output
-        for wdg in (self.missingStarsWdg, self.starsToSkipWdg, self.starsToRetryWdg, self.dataIDWdg):
+        self.numStarsWritten = 0  # number of star data items written to output
+        for wdg in (
+        self.missingStarsWdg, self.starsToSkipWdg, self.starsToRetryWdg,
+        self.dataIDWdg):
             wdg.set("")
 
         # data from tcc tinst:IP_NA2.DAT; value measured 2011-07-21
         # this is a hack; get from tccModel once we support multiple instruments
         self.gprobeScale = [26629.4, 25808.4]
-        self.arcsecPerPixel = 3600.0 * 2 / (abs(self.gprobeScale[0]) + abs(self.gprobeScale[1]))
-    
+        self.arcsecPerPixel = 3600.0 * 2 / (
+                    abs(self.gprobeScale[0]) + abs(self.gprobeScale[1]))
+
     def recordExpParams(self):
         """Record user-set parameters relating to exposures
         """
         self.expTime = self.getEntryNum(self.expTimeWdg)
-        self.guideProbeCtrBinned = [self.guideProbeCtrXY[i] / self.binFactor for i in range(2)]
+        self.guideProbeCtrBinned = [self.guideProbeCtrXY[i] / self.binFactor for
+                                    i in range(2)]
 
     def run(self, sr):
         """Take a set of pointing data
@@ -533,7 +548,7 @@ class ScriptClass(object):
 
         if self.azAltList is None:
             raise ScriptError("No az/alt grid selected")
-        
+
         ptDataDir = os.path.join(RO.OS.getDocsDir(), "ptdata")
         if not os.path.exists(ptDataDir):
             sr.showMsg("Creating directory %r" % (ptDataDir,))
@@ -547,15 +562,20 @@ class ScriptClass(object):
             self.guideProbeCtrXY = [512, 512]
             self.ptErrProbe = 1
         else:
-            yield sr.waitCmd("tcc", "show inst/full") # make sure we have current guide probe info
+            yield sr.waitCmd("tcc",
+                             "show inst/full")  # make sure we have current guide probe info
             ptErrProbe = self.tccModel.ptErrProbe[0]
             if ptErrProbe in (0, None):
-                raise ScriptError("Invalid pointing error probe %s; must be >= 1" % (ptErrProbe,))
+                raise ScriptError(
+                    "Invalid pointing error probe %s; must be >= 1" % (
+                    ptErrProbe,))
             guideProbe = self.tccModel.gProbeDict.get(ptErrProbe)
             if guideProbe is None:
-                raise ScriptError("No data for pointing error probe %s" % (ptErrProbe,))
+                raise ScriptError(
+                    "No data for pointing error probe %s" % (ptErrProbe,))
             if not guideProbe.exists:
-                raise ScriptError("Pointing error probe %s is disabled" % (ptErrProbe,))
+                raise ScriptError(
+                    "Pointing error probe %s is disabled" % (ptErrProbe,))
             self.guideProbeCtrXY = guideProbe.ctrXY[:]
             self.ptErrProbe = ptErrProbe
 
@@ -564,7 +584,7 @@ class ScriptClass(object):
         ptDataName = "ptdata_%s.dat" % (currDateStr,)
         ptDataPath = os.path.join(ptDataDir, ptDataName)
         self.dataPathWdg.set(ptDataPath)
-        self.dataPathWdg.xview("end") # the interesting part is the end
+        self.dataPathWdg.xview("end")  # the interesting part is the end
         with open(ptDataPath, "w") as ptDataFile:
             headerStrList = self.getHeaderStrList(currDateStr)
             for headerStr in headerStrList:
@@ -577,7 +597,8 @@ class ScriptClass(object):
                     # pausing
                     yield
                 else:
-                    yield self.waitMeasureOneStar(starNum=starNum, ptDataFile=ptDataFile)
+                    yield self.waitMeasureOneStar(starNum=starNum,
+                                                  ptDataFile=ptDataFile)
 
     def setGrid(self, wdg=None):
         """Set a particular grid based on the selected name in self.gridWdg
@@ -604,8 +625,9 @@ class ScriptClass(object):
                     azList.append(az)
                     altList.append(alt)
                 except Exception:
-                    self.sr.showMsg("Cannot parse line %s as az alt: %r\n" % (i+1, line),
-                        severity = RO.Constants.sevWarning, isTemp=True)
+                    self.sr.showMsg(
+                        "Cannot parse line %s as az alt: %r\n" % (i + 1, line),
+                        severity=RO.Constants.sevWarning, isTemp=True)
         numPoints = len(azList)
         if len(azList) != len(altList):
             raise RuntimeError("Bug: az and alt list have different length")
@@ -614,7 +636,8 @@ class ScriptClass(object):
         self.azAltList["alt"] = altList
         self.numStarsWdg.set(" %s stars" % (numPoints,))
         self.azAltGraph.plotAzAltPoints(self.azAltList)
-        for wdg in (self.missingStarsWdg, self.starsToSkipWdg, self.starsToRetryWdg):
+        for wdg in (
+        self.missingStarsWdg, self.starsToSkipWdg, self.starsToRetryWdg):
             wdg.set("")
             wdg.setMaxVal(numPoints)
 
@@ -641,9 +664,11 @@ class ScriptClass(object):
                         continue
                     yield nextStarNum
             except StopIteration:
-                hasMissingStars = bool(self.missingStarsWdg.intSet - self.starsToSkipWdg.intSet)
+                hasMissingStars = bool(
+                    self.missingStarsWdg.intSet - self.starsToSkipWdg.intSet)
                 if not self.attendedModeWdg.getBool() and hasMissingStars:
-                    yield self.sr.waitPause("Some stars missing; paused to allow retry",
+                    yield self.sr.waitPause(
+                        "Some stars missing; paused to allow retry",
                         severity=RO.Constants.sevWarning)
                 else:
                     raise
@@ -651,15 +676,15 @@ class ScriptClass(object):
     def waitComputePtErr(self, starMeas):
         measPosUnbinned = [starMeas.xyPos[i] * self.binFactor for i in range(2)]
         yield self.sr.waitCmd(
-            actor = "tcc",
-            cmdStr = "ptcorr %0.6f, %0.6f %s=%s %0.2f, %0.2f GImage=%s" % (
+            actor="tcc",
+            cmdStr="ptcorr %0.6f, %0.6f %s=%s %0.2f, %0.2f GImage=%s" % (
                 self.ptRefStar.pos[0], self.ptRefStar.pos[1],
                 self.ptRefStar.coordSysName,
                 self.ptRefStar.coordSysDate,
                 measPosUnbinned[0], measPosUnbinned[1],
                 self.ptErrProbe
             ),
-            keyVars = (self.tccModel.ptCorr, self.tccModel.ptData),
+            keyVars=(self.tccModel.ptCorr, self.tccModel.ptData),
         )
         cmdVar = self.sr.value
         ptCorrValueList = cmdVar.getLastKeyVarData(self.tccModel.ptCorr)
@@ -678,10 +703,10 @@ class ScriptClass(object):
                 raise ScriptError("ptData keyword not seen")
 
         self.sr.value = PtErr(
-            ptErr = ptCorrValueList[0:2],
-            desPhysPos = ptDataValueList[0:2],
-            mountPos = ptDataValueList[2:4],
-            rotPhys = ptDataValueList[4],
+            ptErr=ptCorrValueList[0:2],
+            desPhysPos=ptDataValueList[0:2],
+            mountPos=ptDataValueList[2:4],
+            rotPhys=ptDataValueList[4],
         )
 
     def waitFindStar(self, firstOnly=False):
@@ -695,13 +720,13 @@ class ScriptClass(object):
 
         self.sr.showMsg("Exposing %s sec to find best star" % (self.expTime,))
         findStarCmdStr = "findstar " + self.formatExposeArgs(doWindow=False)
-        
+
         self.doTakeFinalImage = True
         yield self.sr.waitCmd(
-           actor = self.guideActor,
-           cmdStr = findStarCmdStr,
-           keyVars = (self.guideModel.file, self.guideModel.ecam_star),
-           checkFail = False,
+            actor=self.guideActor,
+            cmdStr=findStarCmdStr,
+            keyVars=(self.guideModel.file, self.guideModel.ecam_star),
+            checkFail=False,
         )
         cmdVar = self.sr.value
 
@@ -737,7 +762,8 @@ class ScriptClass(object):
         sr = self.sr
 
         try:
-            self.numStarsWdg.set(" %s of %s stars" % (i + 1, len(self.azAltList)))
+            self.numStarsWdg.set(
+                " %s of %s stars" % (i + 1, len(self.azAltList)))
             az = rec["az"]
             alt = rec["alt"]
             self.azAltList["state"][i] = self.azAltGraph.Measuring
@@ -749,20 +775,20 @@ class ScriptClass(object):
 
             # tell the world, but don't wait for this command to finish
             sr.startCmd(
-                actor = "tcc",
-                cmdStr = 'broadcast/type=info "Pointing Data script slewing to star %s of %s"' % \
-                    (i + 1, len(self.azAltList)),
-                checkFail = False,
+                actor="tcc",
+                cmdStr='broadcast/type=info "Pointing Data script slewing to star %s of %s"' % \
+                       (i + 1, len(self.azAltList)),
+                checkFail=False,
             )
 
             # slew to the pointing reference star
             # use checkFail=False for all commands so the script can continue with the next star
             yield sr.waitCmd(
-                actor = "tcc",
-                cmdStr = "track %0.7f, %0.7f obs/pterr/rottype=%s/rotang=0/magRange=(%s, %s)" % \
-                    (az, alt, rotType, minMag, maxMag),
-                keyVars = (self.tccModel.ptRefStar,),
-                checkFail = False,
+                actor="tcc",
+                cmdStr="track %0.7f, %0.7f obs/pterr/rottype=%s/rotang=0/magRange=(%s, %s)" % \
+                       (az, alt, rotType, minMag, maxMag),
+                keyVars=(self.tccModel.ptRefStar,),
+                checkFail=False,
             )
             cmdVar = sr.value
             if cmdVar is None or cmdVar.didFail:
@@ -773,7 +799,8 @@ class ScriptClass(object):
                     raise ScriptError("No pointing reference star found")
                 else:
                     if self.currStarNum % 2 == 0:
-                        raise ScriptError("In debug mode every other star is failed")
+                        raise ScriptError(
+                            "In debug mode every other star is failed")
                     ptRefStarValues = (20, 80, 0, 0, 0, 0, "ICRS", 2000, 7)
             self.ptRefStar = PtRefStar(ptRefStarValues)
 
@@ -786,10 +813,10 @@ class ScriptClass(object):
             numExp = self.numExpWdg.getNum()
             for expInd in range(numExp):
                 sr.startCmd(
-                    actor = "tcc",
-                    cmdStr = 'broadcast/type=info "Pointing Data script exposure %s of %s for star %s of %s"' % \
-                        (expInd + 1, numExp, i + 1, len(self.azAltList)),
-                    checkFail = False,
+                    actor="tcc",
+                    cmdStr='broadcast/type=info "Pointing Data script exposure %s of %s for star %s of %s"' % \
+                           (expInd + 1, numExp, i + 1, len(self.azAltList)),
+                    checkFail=False,
                 )
 
                 self.recordExpParams()
@@ -805,19 +832,20 @@ class ScriptClass(object):
 
                 # correct relative error (using current calib and guide offsets)
                 yield sr.waitCmd(
-                    actor = "tcc",
-                    cmdStr = "offset/computed calib %s, %s" % (-ptErr.ptErr[0], -ptErr.ptErr[1]),
-                    checkFail = False,
+                    actor="tcc",
+                    cmdStr="offset/computed calib %s, %s" % (
+                    -ptErr.ptErr[0], -ptErr.ptErr[1]),
+                    checkFail=False,
                 )
                 cmdVar = sr.value
                 if cmdVar is None or cmdVar.didFail:
                     raise ScriptError("Offset command failed")
         except ScriptError as e:
             sr.startCmd(
-                actor = "tcc",
-                cmdStr = 'broadcast/type=warning "Pointing Data script failed to measure star %s of %s"' % \
-                    (i + 1, len(self.azAltList)),
-                checkFail = False,
+                actor="tcc",
+                cmdStr='broadcast/type=warning "Pointing Data script failed to measure star %s of %s"' % \
+                       (i + 1, len(self.azAltList)),
+                checkFail=False,
             )
             self.sr.showMsg(str(e), severity=RO.Constants.sevWarning)
             self.missingStarsWdg.addInt(starNum)
@@ -825,15 +853,17 @@ class ScriptClass(object):
             self.azAltGraph.plotAzAltPoints(self.azAltList)
             if self.attendedModeWdg.getBool():
                 self.starsToRetryWdg.addInt(starNum)
-                yield self.sr.waitPause("Star %s failed; paused so you can retry" % (starNum,),
-                    severity = RO.Constants.sevWarning)
+                yield self.sr.waitPause(
+                    "Star %s failed; paused so you can retry" % (starNum,),
+                    severity=RO.Constants.sevWarning)
             return
 
         # log pointing error
         # do this after the last measurement of the star, so we have only one entry per star
         # and record the value with the star most accurately centered (we hope)
         currStarName = self.sr.getKeyVar(self.tccModel.objName, defVal="?")
-        dataIDStr = "entry %d star %d %s" % (self.numStarsWritten + 1, self.currStarNum, currStarName)
+        dataIDStr = "entry %d star %d %s" % (
+        self.numStarsWritten + 1, self.currStarNum, currStarName)
         dataStr = "%s  ! %s\n" % (ptErr.getPtDataStr(), dataIDStr)
         ptDataFile.write(dataStr)
         ptDataFile.flush()
@@ -871,10 +901,11 @@ class AzAltGraph(Tkinter.Frame):
     def _setLimits(self):
         """Update plot limits; must be done for every call to plotAzAltPoints
         """
-        self.axis.set_xticklabels(['-90', '-135', 'N 180', '135', 'E 90', '45', '0', '-45'])
+        self.axis.set_xticklabels(
+            ['-90', '-135', 'N 180', '135', 'E 90', '45', '0', '-45'])
         self.axis.set_ylim(0, 90)
         self.axis.set_yticks((0, 15, 30, 45, 60, 75, 90))
-        self.axis.set_yticklabels([]) # ['75', '60', '45', '15', '0'])
+        self.axis.set_yticklabels([])  # ['75', '60', '45', '15', '0'])
 
     def plotAzAltPoints(self, azAltPoints):
         """Plot az/alt points
@@ -887,22 +918,26 @@ class AzAltGraph(Tkinter.Frame):
         self.axis.clear()
 
         markerDict = {
-            self.Unmeasured: dict(marker="o", markeredgecolor="black", fillstyle="none", markersize=3),
-            self.Measuring: dict(marker="*", markeredgecolor="blue", markerfacecolor="blue", markersize=9),
-            self.Measured: dict(marker="*", markeredgecolor="green", markerfacecolor="green", markersize=7),
+            self.Unmeasured: dict(marker="o", markeredgecolor="black",
+                                  fillstyle="none", markersize=3),
+            self.Measuring: dict(marker="*", markeredgecolor="blue",
+                                 markerfacecolor="blue", markersize=9),
+            self.Measured: dict(marker="*", markeredgecolor="green",
+                                markerfacecolor="green", markersize=7),
             self.Failed: dict(marker="x", markeredgecolor="red", markersize=7),
         }
 
         # convert az, alt to r, theta, where r is 0 in the middle and theta is 0 right, 90 up
         for state in self.AllStates:
             markerArgs = markerDict[state]
-            az = numpy.compress(azAltPoints["state"] == state, azAltPoints["az"])
-            alt = numpy.compress(azAltPoints["state"] == state, azAltPoints["alt"])
+            az = numpy.compress(azAltPoints["state"] == state,
+                                azAltPoints["az"])
+            alt = numpy.compress(azAltPoints["state"] == state,
+                                 azAltPoints["alt"])
 
             r = numpy.subtract(90, alt)
             theta = numpy.deg2rad(numpy.subtract(270, az))
             self.axis.plot(theta, r, linestyle="", **markerArgs)
-
 
         # plot connecting lines
         az = azAltPoints["az"]
@@ -938,16 +973,16 @@ def getGridDirs():
 
 class StarMeas(object):
     def __init__(self,
-        xyPos = None,
-        sky = None,
-        ampl = None,
-        fwhm = None,
-    ):
+                 xyPos=None,
+                 sky=None,
+                 ampl=None,
+                 fwhm=None,
+                 ):
         self.xyPos = xyPos
         self.sky = sky
         self.ampl = ampl
         self.fwhm = fwhm
-    
+
     @classmethod
     def fromStarKey(cls, starKeyData):
         """Create an instance from star keyword data.
@@ -957,15 +992,17 @@ class StarMeas(object):
             # sky = starKeyData[13],
             # ampl = starKeyData[14],
             # xyPos = starKeyData[2:4],
-            xyPos = starKeyData[1:3],
-            fwhm = starKeyData[3],
-            sky = starKeyData[4],
-            ampl = starKeyData[5],
+            xyPos=starKeyData[1:3],
+            fwhm=starKeyData[3],
+            sky=starKeyData[4],
+            ampl=starKeyData[5],
         )
+
 
 class PtErr(object):
     """Pointing error data
     """
+
     def __init__(self, ptErr, desPhysPos, mountPos, rotPhys):
         """Construct a PtErr object
 
@@ -998,9 +1035,11 @@ class PtErr(object):
             self.rotPhys,
         )
 
+
 class PtRefStar(object):
     """Information about a pointing reference star
     """
+
     def __init__(self, valueList):
         """Construct a PtRefStar from a ptRefStar keyword value list
         """
@@ -1014,13 +1053,14 @@ class PtRefStar(object):
         self.coordSysDate = valueList[7]
         self.mag = valueList[8]
 
+
 def fakeStarData(
-    typeChar = "f",
-    xyPos = (10.0, 10.0),
-    sky = 200,
-    ampl = 1500,
-    fwhm = 2.5,
-    expid = 1234
+        typeChar="f",
+        xyPos=(10.0, 10.0),
+        sky=200,
+        ampl=1500,
+        fwhm=2.5,
+        expid=1234
 ):
     """Make a list containing one star data list for debug mode"""
     return [[1, xyPos[0], xyPos[1], fwhm, sky, ampl]]
