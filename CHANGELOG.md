@@ -17,6 +17,8 @@
 ### Changes
 
 - Added all the scripts from STUI because STUI 1.7.11 will remove them.
-- Removed dithering from APOGEE cals
+- Removed APOGEE cals, we want to force observers to run them via SOP.
 - Renamed all files to Title Format since they'll be seen by users
-- 
+- Updates doApoggeeBossScience from nDither to nExposure
+- Removed Run_Commands.py, Loop Commands.py, and Pointing Data.py
+ as they will be maintained inside STUI

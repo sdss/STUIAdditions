@@ -36,7 +36,7 @@ import time
 import RO.Wdg
 import TUI.Models
 
-__version__ = '3.0.1'
+__version__ = '3.0.2'
 
 
 # noinspection PyPep8Naming
@@ -153,6 +153,7 @@ class ScriptClass(object, ):
         self.apogeeState = self.apogeeModel.exposureWroteSummary[0]
         self.apogeeModel.exposureWroteSummary.addCallback(
             self.updateApogeeExpos, callNow=True)
+        self.apogeeBossState = None
 
         self.startHartmannCollimate = None
         self.cmdsModel.CmdQueued.addCallback(self.hartStart, callNow=False)
@@ -189,6 +190,9 @@ class ScriptClass(object, ):
         # If MaNGA is not leading, this will be called
         self.sopModel.doApogeeMangaSequence_ditherSeq.addCallback(
             self.updateApogeeMangaState, callNow=True)
+
+        self.sopModel.doApogeeBossScience_nExposure.addCallback(
+            self.updateApogeeBossState, callNow=True)
 
     def r1PistonMoveFun(self, keyVar):
         if not keyVar.isGenuine:
@@ -264,6 +268,14 @@ class ScriptClass(object, ):
                                                *hart_data),
                             tags=["cur", "c"])
 
+    def updateApogeeBossState(self, keyVar):
+        if not keyVar.isGenuine:
+            return
+        if keyVar[0] != self.apogeeBossState:
+            sr = self.sr
+            self.record(sr, 'ApogeeBoss')
+            self.apogeeBossState = keyVar[0]
+
     def updateApogeeExpos(self, keyVar):
         if not keyVar.isGenuine:
             return
@@ -300,13 +312,14 @@ class ScriptClass(object, ):
             self.record(sr, "MaStar")
             self.ap_manga_seq_i = keyVar[1]
 
-    def getTAITimeStr(self, ):
+    @staticmethod
+    def getTAITimeStr():
         #        return time.strftime("%H:%M:%S",
         #              time.gmtime(time.time() -
         #              - RO.Astro.Tm.getUTCMinusTAI()))
         return time.strftime("%H:%M",
                              time.gmtime(time.time()
-                                         - - RO.Astro.Tm.getUTCMinusTAI()))
+                                         - RO.Astro.Tm.getUTCMinusTAI()))
 
     def getCart(self, sr, ):
         ctLoad = self.guiderModel.cartridgeLoaded
@@ -316,10 +329,12 @@ class ScriptClass(object, ):
         ss = "%2i-%s%s" % (gc, str(gp), str(gs))
         return ss
 
-    def fInt(self, val, num):
+    @staticmethod
+    def fInt(val, num):
         return str(int(val)).rjust(num, " ")
 
     def record(self, sr, atm):
+        print('Log Support callback: {}'.format(atm))
         tm = self.getTAITimeStr()
         try:
             scale = float(sr.getKeyVar(self.tccModel.scaleFac, ind=0,
@@ -399,7 +414,7 @@ class ScriptClass(object, ):
             calibOff0 = float(
                 RO.CnvUtil.posFromPVT(self.tccModel.calibOff[0])) * 3600
         except ValueError:
-            califOff0 = np.nan
+            calibOff0 = np.nan
         try:
             calibOff1 = float(
                 RO.CnvUtil.posFromPVT(self.tccModel.calibOff[1])) * 3600
