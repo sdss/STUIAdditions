@@ -3,8 +3,26 @@
   <component name="JavaScriptSettings">
     <option name="languageLevel" value="ES6" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 2.7 (tui27)" project-jdk-type="Python SDK" />
   <component name="PythonCompatibilityInspectionAdvertiser">
     <option name="version" value="3" />
+  </component>
+  <component name="SvnBranchConfigurationManager">
+    <option name="myConfigurationMap">
+      <map>
+        <entry key="$PROJECT_DIR$/../APO-local">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="branchUrls">
+                <list>
+                  <option value="https://svn.sdss.org/repo/operations/apo/Scripts/branches" />
+                  <option value="https://svn.sdss.org/repo/operations/apo/Scripts/tags" />
+                </list>
+              </option>
+              <option name="trunkUrl" value="https://svn.sdss.org/repo/operations/apo/Scripts/trunk" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>

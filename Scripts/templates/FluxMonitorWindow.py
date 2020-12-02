@@ -7,23 +7,26 @@ History:
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import Tkinter
+
 import matplotlib
+
 import RO.Wdg
 import TUI.Base.StripChartWdg
 import TUI.Models
 
-WindowName = "Inst.Flux Monitor"
+WindowName = "Scripts.templates.FluxMonitorWindow"
 
-def addWindow(tlSet):
-    """Create the window for TUI.
-    """
-    tlSet.createToplevel(
-        name = WindowName,
-        defGeom = "+412+44",
-        visible = False,
-        resizable = True,
-        wdgFunc = FluxMonitorWdg,
-    )
+
+# def addWindow(tlSet):
+#    """Create the window for TUI.
+#    """
+#    tlSet.createToplevel(
+#        name = WindowName,
+#        defGeom = "+412+44",
+#        visible = False,
+#        resizable = True,
+#        wdgFunc = FluxMonitorWdg,
+#    )
 
 class FluxMonitorWdg(Tkinter.Frame):
     def __init__(self, master, timeRange=3600, width=8, height=2.4):
@@ -37,21 +40,22 @@ class FluxMonitorWdg(Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master)
         self.guiderModel = TUI.Models.getModel("guider")
-        
+
         self.stripChartWdg = TUI.Base.StripChartWdg.StripChartWdg(
-            master = self,
-            timeRange = timeRange,
-            numSubplots = 1, 
-            width = width,
-            height = height,
-            cnvTimeFunc = TUI.Base.StripChartWdg.TimeConverter(useUTC=True),
+            master=self,
+            timeRange=timeRange,
+            numSubplots=1,
+            width=width,
+            height=height,
+            cnvTimeFunc=TUI.Base.StripChartWdg.TimeConverter(useUTC=True),
         )
         self.stripChartWdg.grid(row=0, column=0, sticky="nwes")
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
         # the default ticks are not nice, so be explicit
-        self.stripChartWdg.xaxis.set_major_locator(matplotlib.dates.MinuteLocator(byminute=range(0, 61, 10)))
+        self.stripChartWdg.xaxis.set_major_locator(
+            matplotlib.dates.MinuteLocator(byminute=range(0, 61, 10)))
 
         subplotInd = 0
 
@@ -64,22 +68,24 @@ class FluxMonitorWdg(Tkinter.Frame):
             expTime = self.guiderModel.expTime[0]
             if expTime == None:
                 return None
-            return modelFlux/expTime
+            return modelFlux / expTime
 
         self.stripChartWdg.plotKeyVar(
-            label = "Model Flux",
-            subplotInd = subplotInd,
-            keyVar = self.guiderModel.probe,
-            keyInd = 7,
-            func = fluxFun,
-            color = "green",
+            label="Model Flux",
+            subplotInd=subplotInd,
+            keyVar=self.guiderModel.probe,
+            keyInd=7,
+            func=fluxFun,
+            color="green",
         )
         self.stripChartWdg.showY(0.0, 1.0, subplotInd=0)
-        self.stripChartWdg.subplotArr[0].yaxis.set_label_text("Model Flux (ADU/sec)")
+        self.stripChartWdg.subplotArr[0].yaxis.set_label_text(
+            "Model Flux (ADU/sec)")
 
-        self.clearWdg = RO.Wdg.Button(master = self, text = "C", callFunc = self.clearCharts)
-        self.clearWdg.grid(row=0, column=0, sticky = "sw")
-    
+        self.clearWdg = RO.Wdg.Button(master=self, text="C",
+                                      callFunc=self.clearCharts)
+        self.clearWdg.grid(row=0, column=0, sticky="sw")
+
     def clearCharts(self, wdg=None):
         """Clear all strip charts
         """
@@ -87,12 +93,14 @@ class FluxMonitorWdg(Tkinter.Frame):
 
 
 if __name__ == "__main__":
-    import TestData
-
-    addWindow(TestData.tuiModel.tlSet)
-    TestData.tuiModel.tlSet.makeVisible(WindowName)
+    pass
+    # Uncomment these two lines to use, they're commented because STUI will
+    # read this directory and any files in it at startup
+    # addWindow(TestData.tuiModel.tlSet)
+    # TestData.tuiModel.tlSet.makeVisible(WindowName)
 
     # there isn't any flux data yet    
 #    TestData.runTest()
-    
-    TestData.tuiModel.reactor.run()
+
+# Uncomment this too for proper usage
+# TestData.tuiModel.reactor.run()

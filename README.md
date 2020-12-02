@@ -1,25 +1,32 @@
 # STUIAdditions
 
-By Dylan Gatlin
+This is a repository of STUI Scripts. As of STUI  1.7.12, this repository
+ replaced APO-local as the main home for observer-maintained scripts. This
+ repository is required for normal night operations.
+ 
+## Authors
 
-This is a repository of my development STUI Scripts. It is not connected with
- the live STUIAdditions library, but once a script is stable, it will be sent
- there to the observing team
+Dylan Gatlin, Elena Malanuchenko, Russel Owens, Dan Oravetz
 
-## Notable Inclusions
+## Accessing/Using
+STUI checks a few locations for STUIAdditions directories. If this directory
+ is there when STUI starts, then you will have access to the directory and
+ any scripts found inside will be available in STUI. The recommended install
+ procedure is as follows:
+ 
+### Mac Installation
+```bash
+cd ~/Library/Application\ Support/
+git clone https://github.com/sdss/STUIAdditions.git
+```
 
-### LogSupport3
+### Linux Installation
+```bash
+mkdir -p ~/software/
+cd ~/software/
+git clone https://github.com/sdss/STUIAdditions.git
+```
 
-This is the development version of LogSupport which is meant to have callbacks
- on dither sequences and well-formatted tables.
-
-### guide_monitor_2
-
-This is a unique script designed to bypass the need for the builtin guide
- monitor, scale monitor, and focus monitor. The script is designed to be less
- busy than the builtin guide monitor
-
-### garbage_collector
-
-In an attempt to clean STUI's memory leak, I began working with the garbage
- collector. It does not work.
+### Updating
+If at any time changes are made, you can update your local version by running
+ `git pull` from the top of the repository.

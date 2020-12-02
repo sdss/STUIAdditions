@@ -1,4 +1,5 @@
-""" Elena Malanushenko  01/30/2011
+"""
+Elena Malanushenko  01/30/2011
 script to gather information for night log
 
 History: 
@@ -29,10 +30,13 @@ some day in the past:  added 4th window for hartmann output.
     numbers
 """
 
+import numpy as np
+import time
+
 import RO.Wdg
 import TUI.Models
-import time
-import numpy as np
+
+__version__ = '3.0.2'
 
 
 # noinspection PyPep8Naming
@@ -42,7 +46,7 @@ class ScriptClass(object, ):
         # if False, real time run
         sr.debug = False
         self.sr = sr
-        self.name = "-logSupport-3-"
+        self.name = "===logSupport 3 Version {}===".format(__version__)
         print(self.name)
         width = 80
         height = 5
@@ -134,11 +138,9 @@ class ScriptClass(object, ):
         self.logWdg3.addMsg("%s" % dashes, tags=["cur"])
 
         self.logWdg4.addMsg("--- Hartmann ---", tags=["cur", "c"])
-        self.logWdg4.addMsg('{:<5} {:<9} {:<5} {:<5} {:<5} {:<7} {:<4} {:<5}'
-                            ' {:<5} {:<5} {:<7} {:<4}'
-                            ''.format('Time', ' Cart', ' R1', ' B1', 'Move1',
-                                      'B1Resid', 'TSP1', ' R2', ' B2', 'Move2',
-                                      'B2Resid', 'TSP2'),
+        self.logWdg4.addMsg('{:<5} {:<9} {:<5} {:<5} {:<5} {:<7} {:<4}'
+                            ''.format('Time', ' Cart', 'TSP1', ' R1', ' B1',
+                                      'Move1', 'B1Resid'),
                             tags=["cur", "c"])
         # sline = "%s     %s    %s" % (14 * '-', 28 * "-", 28 * "-")
 
@@ -151,6 +153,7 @@ class ScriptClass(object, ):
         self.apogeeState = self.apogeeModel.exposureWroteSummary[0]
         self.apogeeModel.exposureWroteSummary.addCallback(
             self.updateApogeeExpos, callNow=True)
+        self.apogeeBossState = None
 
         self.startHartmannCollimate = None
         self.cmdsModel.CmdQueued.addCallback(self.hartStart, callNow=False)
@@ -161,21 +164,21 @@ class ScriptClass(object, ):
 
         self.hartmannModel.r1PistonMove.addCallback(self.r1PistonMoveFun,
                                                     callNow=False)
-        self.hartmannModel.r2PistonMove.addCallback(self.r2PistonMoveFun,
-                                                    callNow=False)
+        # self.hartmannModel.r2PistonMove.addCallback(self.r2PistonMoveFun,
+        # callNow=False)
 
         self.hartmannModel.b1RingMove.addCallback(self.b1RingMoveFun,
                                                   callNow=False)
-        self.hartmannModel.b2RingMove.addCallback(self.b2RingMoveFun,
-                                                  callNow=False)
+        # self.hartmannModel.b2RingMove.addCallback(self.b2RingMoveFun,
+        # callNow=False)
         self.hartmannModel.sp1AverageMove.addCallback(self.sp1AverageMoveFun,
                                                       callNow=False)
-        self.hartmannModel.sp2AverageMove.addCallback(self.sp2AverageMoveFun,
-                                                      callNow=False)
+        # self.hartmannModel.sp2AverageMove.addCallback(self.sp2AverageMoveFun,
+        #                                               callNow=False)
         self.hartmannModel.sp1Residuals.addCallback(self.sp1ResidualsFun,
                                                     callNow=False)
-        self.hartmannModel.sp2Residuals.addCallback(self.sp2ResidualsFun,
-                                                    callNow=False)
+        # self.hartmannModel.sp2Residuals.addCallback(self.sp2ResidualsFun,
+        #                                             callNow=False)
 
         self.sopModel = TUI.Models.getModel('sop')
         # Inits a variable used later
@@ -188,45 +191,28 @@ class ScriptClass(object, ):
         self.sopModel.doApogeeMangaSequence_ditherSeq.addCallback(
             self.updateApogeeMangaState, callNow=True)
 
+        self.sopModel.doApogeeBossScience_nExposures.addCallback(
+            self.updateApogeeBossState, callNow=True)
+
     def r1PistonMoveFun(self, keyVar):
         if not keyVar.isGenuine:
             return
         self.hartInfo[0] = keyVar[0]
 
-    def r2PistonMoveFun(self, keyVar):
+    def b1RingMoveFun(self, keyVar):
         if not keyVar.isGenuine:
             return
         self.hartInfo[1] = keyVar[0]
 
-    def b1RingMoveFun(self, keyVar):
+    def sp1AverageMoveFun(self, keyVar):
         if not keyVar.isGenuine:
             return
         self.hartInfo[2] = keyVar[0]
 
-    def b2RingMoveFun(self, keyVar):
-        if not keyVar.isGenuine:
-            return
-        self.hartInfo[3] = keyVar[0]
-
-    def sp1AverageMoveFun(self, keyVar):
-        if not keyVar.isGenuine:
-            return
-        self.hartInfo[4] = keyVar[0]
-
-    def sp2AverageMoveFun(self, keyVar):
-        if not keyVar.isGenuine:
-            return
-        self.hartInfo[5] = keyVar[0]
-
     def sp1ResidualsFun(self, keyVar):
         if not keyVar.isGenuine:
             return
-        self.hartInfo[6] = keyVar[1]
-
-    def sp2ResidualsFun(self, keyVar):
-        if not keyVar.isGenuine:
-            return
-        self.hartInfo[7] = keyVar[1]
+        self.hartInfo[3] = keyVar[1]
 
     def hartStart(self, keyVar):
         if not keyVar.isGenuine:
@@ -273,30 +259,22 @@ class ScriptClass(object, ):
         # except ValueError:
         #    ss3 = "%5s %5s %5s %5s %4s" % (rPiston, bRing, spAvMove, spRes,
         #                                   spTemp)
-        try:
-            hart_data = np.array(self.hartInfo).astype(float)
-            # self.logWdg4.addMsg("%s  %s    %s" % (ss1, ss2, ss3),
-            # tags=["c", "cur"])
-            self.logWdg4.addMsg('{:<5} {:<9} {:>5.0f} {:>5.1f} {:>5.0f}'
-                                ' {:>7.1f}'.format(tm, cart, *hart_data[0::2])
-                                + (' {:>4.1f}'.format(float(
-                                    self.bossModel.sp1Temp[0])))
-                                + (' {:>5.0f} {:>5.1f} {:>5.0f}'
-                                   ' {:>7.1f}'.format(*hart_data[1::2]))
-                                + (' {:>4.1f}'.format(float(
-                                    self.bossModel.sp2Temp[0]))),
-                                tags=["cur", "c"])
-        except ValueError:
-            hart_data = np.array(self.hartInfo).astype(str)
-            self.logWdg4.addMsg('{:<5} {:<9} {:>5} {:>5} {:>5} {:>7}'
-                                ''.format(tm, cart, *hart_data[0::2])
-                                + (' {:>4}'.fomrat(float(
-                                    self.bossModel.sp1Temp[0])))
-                                + (' {:>5} {:>5} {:>5} {:>7}'.format(
-                                    *hart_data[1::2]))
-                                + (' {:>4}'.format(float(
-                                    self.bossmodel.sp2Temp[0]))),
-                                tags=["cur", "c"])
+        hart_data = np.array(self.hartInfo).astype(float)
+        # self.logWdg4.addMsg("%s  %s    %s" % (ss1, ss2, ss3),
+        # tags=["c", "cur"])
+        self.logWdg4.addMsg('{:<5} {:<9} {:>4.1f} {:>5.0f} {:>5.1f} {:>5.0f}'
+                            ' {:>7.1f}'.format(tm, cart,
+                                               float(self.bossModel.sp1Temp[0]),
+                                               *hart_data),
+                            tags=["cur", "c"])
+
+    def updateApogeeBossState(self, keyVar):
+        if not keyVar.isGenuine:
+            return
+        if keyVar[0] != self.apogeeBossState:
+            sr = self.sr
+            self.record(sr, 'ApogeeBoss')
+            self.apogeeBossState = keyVar[0]
 
     def updateApogeeExpos(self, keyVar):
         if not keyVar.isGenuine:
@@ -334,13 +312,14 @@ class ScriptClass(object, ):
             self.record(sr, "MaStar")
             self.ap_manga_seq_i = keyVar[1]
 
-    def getTAITimeStr(self, ):
+    @staticmethod
+    def getTAITimeStr():
         #        return time.strftime("%H:%M:%S",
         #              time.gmtime(time.time() -
         #              - RO.Astro.Tm.getUTCMinusTAI()))
         return time.strftime("%H:%M",
                              time.gmtime(time.time()
-                                         - - RO.Astro.Tm.getUTCMinusTAI()))
+                                         - RO.Astro.Tm.getUTCMinusTAI()))
 
     def getCart(self, sr, ):
         ctLoad = self.guiderModel.cartridgeLoaded
@@ -350,14 +329,16 @@ class ScriptClass(object, ):
         ss = "%2i-%s%s" % (gc, str(gp), str(gs))
         return ss
 
-    def fInt(self, val, num):
+    @staticmethod
+    def fInt(val, num):
         return str(int(val)).rjust(num, " ")
 
     def record(self, sr, atm):
+        print('Log Support callback: {}'.format(atm))
         tm = self.getTAITimeStr()
         try:
             scale = float(sr.getKeyVar(self.tccModel.scaleFac, ind=0,
-                defVal=1.0))
+                                       defVal=1.0))
         except ValueError:
             scale = np.nan
         try:
@@ -377,7 +358,7 @@ class ScriptClass(object, ):
 
         try:
             primOr = int(
-                    sr.getKeyVar(self.tccModel.primOrient, ind=0, defVal=9999))
+                sr.getKeyVar(self.tccModel.primOrient, ind=0, defVal=9999))
         except ValueError:
             primOr = np.nan
         try:
@@ -431,9 +412,9 @@ class ScriptClass(object, ):
             guideOff2 = np.nan
         try:
             calibOff0 = float(
-                    RO.CnvUtil.posFromPVT(self.tccModel.calibOff[0])) * 3600
+                RO.CnvUtil.posFromPVT(self.tccModel.calibOff[0])) * 3600
         except ValueError:
-            califOff0 = np.nan
+            calibOff0 = np.nan
         try:
             calibOff1 = float(
                 RO.CnvUtil.posFromPVT(self.tccModel.calibOff[1])) * 3600
@@ -449,17 +430,17 @@ class ScriptClass(object, ):
 
         try:
             fwhm = float(
-                    sr.getKeyVar(self.guiderModel.seeing, ind=0, defVal=99.9))
+                sr.getKeyVar(self.guiderModel.seeing, ind=0, defVal=99.9))
         except ValueError:
             fwhm = np.nan
         try:
             guideRMS = float(sr.getKeyVar(self.guiderModel.guideRMS, ind=1,
-                                      defVal=99.999))
+                                          defVal=99.999))
         except ValueError:
             guideRMS = np.nan
         try:
             airT = float(
-                    sr.getKeyVar(self.apoModel.airTempPT, ind=0, defVal=-99))
+                sr.getKeyVar(self.apoModel.airTempPT, ind=0, defVal=-99))
         except ValueError:
             airT = np.nan
         try:
@@ -523,4 +504,3 @@ class ScriptClass(object, ):
     def run(self, sr):
         self.record(sr, "")
         self.print_hartmann_to_log()
-

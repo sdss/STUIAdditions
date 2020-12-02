@@ -1,0 +1,70 @@
+#!/usr/bin/env python
+
+""" install  APO scripts library for STUI 
+
+to one of places:
+os.getenv(HOME)+/Library/Application Support/STUIAdditions/Scripts/APO
+or  /Library/Application Support/STUIAdditions/Scripts/APO
+
+History
+06/10/2013 EM: initial version
+08/21/2013 EM: changed name from APO-local to zAPO-local to move down on menu
+08/22/2013 EM: changed argparse to optparse for old python on landru and minidru
+"""
+
+import optparse
+
+import os
+import shutil
+import sys
+
+Lpath = "/Library/Application Support/STUIAdditions/Scripts/" + "APO-local"
+lpath = os.getenv("HOME") + Lpath
+
+desc = 'Install/Delete  APO-local scripts library for STUI'
+usage = ' %(prog)s [OPTIONS]'
+parser = optparse.OptionParser(description=desc, usage=usage)
+s1 = "/Library/Application Support/STUIAdditions/Scripts/APO-local"
+s2 = "~" + s1
+ssL = '%s, default %s %s' % (s1, " " * 40, s2)
+parser.add_option('-L', '--Lpath', help=ssL, action='store_true')
+ssD = "detele script directory, default is install"
+parser.add_option('-d', '--delete', help=ssD, action='store_true')
+(opts, args) = parser.parse_args()
+
+cur_path = os.getcwd()
+desPath = lpath
+if opts.Lpath:  desPath = Lpath
+print "  Scripts path=", desPath
+
+act = "install"
+if opts.delete:  act = "delete"
+print "  Action =", act
+
+if act == "delete":
+    if not os.path.isdir(desPath):
+        sys.exit(" no such directory")
+    print "  deleting  old script directory .. ",
+    shutil.rmtree(desPath)
+    print "done"
+
+if act == "install":
+    if (desPath == cur_path):
+        sys.exit(
+            "  Error: current and scripts directories should not be the same, exit")
+    if os.path.isdir(desPath):
+        print "  deleting  old script directory .. ",
+        shutil.rmtree(desPath)
+        print "done"
+    print "  creating new directory and copying files ...",
+    shutil.copytree(cur_path, desPath)
+    print "done"
+
+print "  ok! "
+
+#  os.makedirs(path)
+#  os.path.isdir(path):
+#  os.path.exists(path):
+#  shutil.rmtree(dir)
+#  shutil.copytree(sourceDir, destDir)
+#  shutil.copy(sourceDir, destDir)
