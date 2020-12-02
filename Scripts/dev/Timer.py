@@ -82,7 +82,7 @@ class ScriptClass(object):
             self.calc_apogee_science_time, callNow=False
         )
 
-        self.sop.doApogeeBossScience_nExposure.addCallback(
+        self.sop.doApogeeBossScience_nExposures.addCallback(
             self.calc_apogee_boss_science_time, callNow=False
         )
 
@@ -114,20 +114,20 @@ class ScriptClass(object):
                                               self.remaining_time,
                                               self.total_time))
         elif 'BHM lead' in self.sop.survey[1]:
-            remaining_exps = (self.sop.doApogeeBossScience_nExposure[1]
-                              - self.sop.doApogeeBossScience_nExposure[0])
-            total_exps = self.sop.doApogeeBossScience_nExposure[1]
+            remaining_exps = (self.sop.doApogeeBossScience_nExposures[1]
+                              - self.sop.doApogeeBossScience_nExposures[0])
+            total_exps = self.sop.doApogeeBossScience_nExposures[1]
             dither_count = self.sop.apogeeDitherSet[1]
             exp_time = np.max(self.sop.doBossScience_expTime) + 60
             dither_time = np.max(self.sop.doApogeeScience_expTime)
 
-            self.exp_t_passed = (self.sop.doApogeeBossScience_nExposure[0]
+            self.exp_t_passed = (self.sop.doApogeeBossScience_nExposures[0]
                                  * exp_time
                                  + dither_count * dither_time
                                  + self.apogee.utrReadState[2] *
                                  self.apogee.utrReadTime[0])
             self.remaining_time = total_exps * exp_time - self.exp_t_passed
-            self.total_time = (self.sop.doApogeeBossScience_nExposure[1]
+            self.total_time = (self.sop.doApogeeBossScience_nExposures[1]
                                * exp_time)
             self.timer_bar.setValue(newValue=self.remaining_time / 60, newMin=0,
                                     newMax=self.total_time / 60)
@@ -142,20 +142,20 @@ class ScriptClass(object):
         self.set_timer()
 
     def calc_apogee_boss_science_time(self, keyVar):
-        remaining_exps = (self.sop.doApogeeBossScience_nExposure[1]
-                          - self.sop.doApogeeBossScience_nExposure[0])
-        total_exps = self.sop.doApogeeBossScience_nExposure[1]
+        remaining_exps = (self.sop.doApogeeBossScience_nExposures[1]
+                          - self.sop.doApogeeBossScience_nExposures[0])
+        total_exps = self.sop.doApogeeBossScience_nExposures[1]
         dither_count = self.sop.apogeeDitherSet[1]
         exp_time = np.max(self.sop.doBossScience_expTime) + 60
         dither_time = np.max(self.sop.doApogeeScience_expTime)
 
-        self.exp_t_passed = (self.sop.doApogeeBossScience_nExposure[0]
+        self.exp_t_passed = (self.sop.doApogeeBossScience_nExposures[0]
                              * exp_time
                              + dither_count * dither_time
                              + self.apogee.utrReadState[2] *
                              self.apogee.utrReadTime[0])
         self.remaining_time = total_exps * exp_time - self.exp_t_passed
-        self.total_time = (self.sop.doApogeeBossScience_nExposure[1]
+        self.total_time = (self.sop.doApogeeBossScience_nExposures[1]
                            * exp_time)
         self.timer_bar.setValue(newValue=self.remaining_time / 60, newMin=0,
                                 newMax=self.total_time / 60)

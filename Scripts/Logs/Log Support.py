@@ -191,7 +191,7 @@ class ScriptClass(object, ):
         self.sopModel.doApogeeMangaSequence_ditherSeq.addCallback(
             self.updateApogeeMangaState, callNow=True)
 
-        self.sopModel.doApogeeBossScience_nExposure.addCallback(
+        self.sopModel.doApogeeBossScience_nExposures.addCallback(
             self.updateApogeeBossState, callNow=True)
 
     def r1PistonMoveFun(self, keyVar):

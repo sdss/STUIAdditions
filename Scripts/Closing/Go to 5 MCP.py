@@ -35,7 +35,7 @@ import RO.Astro.Tm
 import RO.Wdg
 import TUI.Models
 
-__version__ = '3.0.0'
+__version__ = '3.0.1'
 
 
 class ScriptClass(object):
@@ -118,9 +118,9 @@ class ScriptClass(object):
         self.owMcpGui = "observer@sdss4-hub:mcpop:"
         self.owNone = "None"  # ??
         self.ow = self.semOwner()
-        self.alt = sr.value.getLastKeyVarData(self.tccModel.altStat)[0]
-        self.az = sr.value.getLastKeyVarData(self.tccModel.azStat)[0]
-        self.rot = sr.value.getLastKeyVarData(self.tccModel.rotStat)[0]
+        self.alt = self.tccModel.altStat[0]
+        self.az = self.tccModel.azStat[0]
+        self.rot = self.tccModel.rotStat[0]
         self.altDes = None
 
         #  my debug set: True - run, False - skip the command
