@@ -101,7 +101,8 @@ class ScriptClass(object):
         return crossFid
 
     def updateAz(self, keyVar):
-        if not keyVar.isGenuine: return
+        if not keyVar.isGenuine:
+            return
         timeStr = self.getTAITimeStr()
         self.logWdg1.addMsg("%s   Az:  %s " % (timeStr, self.fidSS(keyVar)))
         ss = "%s   AZ:  %s " % (timeStr, self.fidSS(keyVar))
@@ -112,10 +113,10 @@ class ScriptClass(object):
             ss = "Az: %s ( > %s)" % (self.largeMes, str(self.azMax))
 
     def updateAlt(self, keyVar):
-        if not keyVar.isGenuine: return
+        if not keyVar.isGenuine:
+            return
         timeStr = self.getTAITimeStr()
         self.logWdg2.addMsg("%s   Alt:  %s " % (timeStr, self.fidSS(keyVar)))
-        ss = "%s   Alt:  %s " % (timeStr, self.fidSS(keyVar))
         if abs(keyVar[3]) > self.altMax:
             self.logWdg2.addMsg(
                 "%s ( > %s)" % (self.largeMes, str(self.altMax)),
@@ -124,10 +125,10 @@ class ScriptClass(object):
             ss = "Alt: %s ( > %s)" % (self.largeMes, str(self.altMax))
 
     def updateRot(self, keyVar):
-        if not keyVar.isGenuine:  return
+        if not keyVar.isGenuine:
+            return
         timeStr = self.getTAITimeStr()
         self.logWdg3.addMsg("%s   Rot:  %s " % (timeStr, self.fidSS(keyVar)))
-        ss = "%s   Rot:  %s " % (timeStr, self.fidSS(keyVar))
         if abs(keyVar[3]) > self.rotMax:
             self.logWdg3.addMsg(
                 "%s ( > %s)" % (self.largeMes, str(self.rotMax)),
@@ -135,6 +136,7 @@ class ScriptClass(object):
             self.warning()
             ss = "Rot: %s ( > %s)" % (self.largeMes, str(self.rotMax))
 
+    @staticmethod
     def warning(self, ):
         TUI.PlaySound.fiducialCrossing()
 

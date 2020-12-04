@@ -18,18 +18,19 @@ class ScriptClass(object):
         self.sr = sr
         row = 0
         self.labWdg = RO.Wdg.Label(master=sr.master,
-                                   text="Offsets control panel: ").grid(row=row,
-                                                                        column=0,
-                                                                        sticky="w")
+                                   text="Offsets control panel: ").grid(
+            row=row, column=0, sticky="w")
+
         row += 1
 
         #     set frame with buttons
         butList = (
-        " Save_offset ", " Apply_offset ", " Clear_offsets ", " gotoFK5->3 ",
-        " gotoFK5->11")
+            " Save_offset ", " Apply_offset ", " Clear_offsets ",
+            " gotoFK5->3 ",
+            " gotoFK5->11")
         helpText = (
-        "Save current offset", "Apply saved offset", "Clear current offset",
-        " GotoFK5-3", " GotoFK5-11")
+            "Save current offset", "Apply saved offset", "Clear current offset",
+            " GotoFK5-3", " GotoFK5-11")
         F0 = Tkinter.Frame(master=sr.master)
         F0.grid(row=row, column=0, sticky="w", )
         self.but0 = RO.Wdg.Button(master=F0, helpText=helpText[0],
@@ -69,7 +70,7 @@ class ScriptClass(object):
     def gotofk5to3(self, bt):
         sr = self.sr
         tm = self.getTAITimeStr()
-        act = "guider";
+        act = "guider"
         cmd = "fk5InFiber probe=3"
         sr.startCmd(actor=act, cmdStr=cmd, checkFail=False)
         self.logWdg.addMsg("%s   %s,   %s  %s " %
@@ -78,22 +79,21 @@ class ScriptClass(object):
     def gotofk5to11(self, bt):
         sr = self.sr
         tm = self.getTAITimeStr()
-        act = "guider";
+        act = "guider"
         cmd = "fk5InFiber probe=11"
         sr.startCmd(actor=act, cmdStr=cmd, checkFail=False)
         self.logWdg.addMsg("%s   %s,   %s  %s " %
                            (tm, self.getCart(sr, ), act, cmd))
 
-    # get curremnt offset in degrees
+    # get current offset in degrees
     def getOff(self, ):
-        sr = self.sr
         a0 = self.tccModel.objArcOff[0]
         a1 = self.tccModel.objArcOff[1]
         #     a0=sr.getKeyVar(self.tccModel.objArcOff, ind=0, defVal=0)
         #     a1=sr.getKeyVar(self.tccModel.objArcOff, ind=1, defVal=0)
         objOff0 = RO.CnvUtil.posFromPVT(a0)
         objOff1 = RO.CnvUtil.posFromPVT(a1)
-        return (objOff0, objOff1)
+        return objOff0, objOff1
 
     # save current offset to variable in degrees, but in arcsec
     def saveOff(self, bt):
@@ -101,7 +101,7 @@ class ScriptClass(object):
         self.objOff0 = self.getOff()
 
         def ff(ofs):
-            if ofs == None:
+            if ofs is None:
                 return "%s" % "None"
             else:
                 return '%5.1f"' % (ofs * 3600.0)
@@ -115,25 +115,26 @@ class ScriptClass(object):
     def applOff(self, bt):
         tm = self.getTAITimeStr()
         sr = self.sr
-        if (self.objOff0[0] == None) or (self.objOff0[1] == None):
+        if (self.objOff0[0] is None) or (self.objOff0[1] is None):
             self.logWdg.addMsg(
                 "%s %s,  no offsets " % (tm, self.getCart(self.sr, )))
         else:
-            act = "tcc";
+            act = "tcc"
             cmd = "offset arc %s, %s, 0" % (self.objOff0[0], self.objOff0[1])
             sr.startCmd(actor=act, cmdStr=cmd, checkFail=False)
             self.logWdg.addMsg("%s   %s,   %s  %s " %
                                (tm, self.getCart(self.sr, ), act, cmd),
                                tags=["r"])
 
-    #    ss0='(%5.1f",%5.1f")' % (self.objOff0[0]*3600.0, self.objOff0[1]*3600.0)
+    #    ss0='(%5.1f",%5.1f")' % (self.objOff0[0]*3600.0,
+    #    self.objOff0[1]*3600.0)
     #    self.logWdg.addMsg("%s   Cart = %s,   objArcOff = %s  (applied)" %
     #                       (tm, self.getCart(self.sr,), ss0),tags=["r"])
 
     def clearOff(self, bt):
         tm = self.getTAITimeStr()
         sr = self.sr
-        act = "tcc";
+        act = "tcc"
         cmd = "offset arc /pabs"
         sr.startCmd(actor=act, cmdStr=cmd, checkFail=False)
         self.logWdg.addMsg("%s   %s,   %s  %s " %
@@ -144,16 +145,16 @@ class ScriptClass(object):
                              time.gmtime(
                                  time.time() - - RO.Astro.Tm.getUTCMinusTAI()))
 
-    def getCart(self, sr, ):
+    def getCart(self, sr):
         ct = self.guiderModel.cartridgeLoaded[:]
-        if ct[0] == None:
+        if ct[0] is None:
             ss = "no cart"
         else:
             ss = "%s - %s%s" % (ct[0], ct[1], ct[2])
         return ss
 
     def ff(self, ofs):
-        if ofs == None:
+        if ofs is None:
             return "%s" % "None"
         else:
             return '%5.1f"' % (ofs * 3600.0)

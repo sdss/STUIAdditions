@@ -22,3 +22,17 @@
 - Updates doApoggeeBossScience from nDither to nExposure
 - Removed Run_Commands.py, Loop Commands.py, and Pointing Data.py
  as they will be maintained inside STUI
+
+## [3.1.1] - 2020-12-04
+
+### Changes
+
+- Removed APOGEE folder, only one script was in it, Dither Clearing.py, which
+ we will not use
+
+- Removed engineering folder, only one script was in it, which we will not use
+
+- Removed old folder. Now that they're in the git history, we can still access
+ them if we need them, but they're no longer cluttering
+ 
+- Reformatted some files
