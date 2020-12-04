@@ -7,10 +7,11 @@ History
 08/29/2013 EM: changed mcp.gang descriptions for updated keyword 
 09/05/2013 EM: refinement
 09/25/2013  EM:  check gang position, but run at any position. 
-01/24/2014  fixed bug,  "apogeecal shutterOpen" changed to  "apogeecal shutterClose",
-                    do not know why it was so. 
+01/24/2014  fixed bug,  "apogeecal shutterOpen" changed to
+        "apogeecal shutterClose", do not know why it was so.
 02-17-2014 EM: fixed bug: set checkFail= True to halt script is command fail
-02-21-2014  reverted changes from  01/24/2014 - did not find if it was right or not
+02-21-2014  reverted changes from  01/24/2014 - did not find if it was right or
+        not
 03-05-2014  design refinement  
 """
 
@@ -68,7 +69,7 @@ class ScriptClass(object):
         for ll, tt in zip(self.cmdList, self.tagsList):
             self.logWdg.addMsg("%s" % ll, tags=tt)
 
-    def getTAITimeStr(self, ):
+    def getTAITimeStr(self):
         currPythonSeconds = RO.Astro.Tm.getCurrPySec()
         currTAITuple = time.gmtime(
             currPythonSeconds - RO.Astro.Tm.getUTCMinusTAI())
@@ -87,8 +88,8 @@ class ScriptClass(object):
             yield sr.waitCmd(actor=actor, cmdStr=cmd, checkFail=True, )
             cmdVar = sr.value
             if cmdVar.didFail:
-                ss1 = " %s   ** FAILED **" % (actorCmd)
-                self.logWdg.addMsg("      %s" % (ss1),
+                ss1 = " %s   ** FAILED **" % actorCmd
+                self.logWdg.addMsg("      %s" % ss1,
                                    severity=RO.Constants.sevError)
                 break
             #          raise sr.ScriptError("")
@@ -102,7 +103,8 @@ class ScriptClass(object):
 
 # mcp.py
 # Key("apogeeGang",
-# Enum("0", "1", "2", "3", labelHelp=("Disconnected", "Podium", "Cart", "Sparse cals"))),
+# Enum("0", "1", "2", "3", labelHelp=("Disconnected", "Podium", "Cart",
+# "Sparse cals"))),
 
 # apogeecal allOff
 # apogee shutter close

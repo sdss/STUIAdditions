@@ -3,8 +3,10 @@
 # 01/10/2011 added:  second spiral, debug check button,
 #    Tkinter canvas widget test (need more work to clear memory before to use)
 #    changes type of for-in cycle to use two variables together
-# 01/17/2011 - changed to arcsec units to be consistent with  new guider gui units  
-# 09/04/2013 EM:  check commands if some of them failed and rise an exception if so
+# 01/17/2011 - changed to arcsec units to be consistent with  new guider gui
+# units
+# 09/04/2013 EM:  check commands if some of them failed and rise an exception if
+# so
 
 import Tkinter
 
@@ -79,18 +81,19 @@ class ScriptClass(object):
         dd0 = 0.0;  # central position
         kk = 0  # iteration number
         for (i, j) in zip(raOffs, decOffs):
-            rr = i * step;
+            rr = i * step
             dd = j * step  # new offset in arcsec
             self.logWdg.addMsg(
                 " i = %2i,   ra = %4.0f,  dec = %4.0f " % (kk, rr, dd))
 
-            rrM = (rr - rr0) / 3600.0;
+            rrM = (rr - rr0) / 3600.0
             ddM = (
-                              dd - dd0) / 3600.0  # move to new position in degrees
+                          dd - dd0) / 3600.0  # move to new position in
+            # degrees
             cmdTcc = "offset arc %6.4f, %6.4f" % (
-            rrM, ddM)  # tcc  command to move to the next position
+                rrM, ddM)  # tcc  command to move to the next position
             #  self.logWdg.addMsg("   tcc %s" % (cmdTcc))
-            if sr.debug == True:  # if False, real time run
+            if sr.debug:  # if False, real time run
                 pass
             else:
                 yield sr.waitCmd(actor="tcc", cmdStr=cmdTcc,
@@ -109,7 +112,8 @@ class ScriptClass(object):
             kk = kk + 1
 
         #    ic=i*40+100; jc=100-j*40; ds=15
-        #    square = self.canvas.create_rectangle(ic-ds,jc-ds,ic+ds,jc+ds, fill="darkgreen")
+        #    square = self.canvas.create_rectangle(ic-ds,jc-ds,ic+ds,jc+ds,
+        #    fill="darkgreen")
         #   self.canvas.delete(square)
 
         self.logWdg.addMsg("%s done " % (5 * "-"))
