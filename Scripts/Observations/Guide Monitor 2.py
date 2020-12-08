@@ -24,6 +24,7 @@ class ScriptClass(object):
     def __init__(self, sr):
         print('===Guide Monitor 2 Version {}==='.format(__version__))
         sr.debug = False
+        self.sr = sr
         sr.master.winfo_toplevel().wm_resizable(True, True)
         self.guider_model = TUI.Models.getModel('guider')
         self.tcc_model = TUI.Models.getModel('tcc')
@@ -120,7 +121,8 @@ class ScriptClass(object):
         """
         model = self.guider_model.probe[8]
         ref = self.guider_model.probe[9]
-        # print('Guider ref magnitude: {}'.format(ref))
+        if self.sr.debug:
+            print('Guider ref magnitude: {}'.format(ref))
         # diff = model - 2.5 * 10**ref
         diff = model
         now = datetime.datetime.now()
