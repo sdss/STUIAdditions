@@ -17,7 +17,7 @@ import numpy as np
 import TUI.Base.StripChartWdg
 import TUI.Models
 
-__version__ = '3.0.1'
+__version__ = '3.0.2'
 
 
 class ScriptClass(object):
@@ -120,12 +120,12 @@ class ScriptClass(object):
         """
         model = self.guider_model.probe[8]
         ref = self.guider_model.probe[9]
-        print('Guider ref magnitude: {}'.format(ref))
+        # print('Guider ref magnitude: {}'.format(ref))
         # diff = model - 2.5 * 10**ref
         diff = model
         now = datetime.datetime.now()
-        # if (diff < 0) or (diff > 18):  # Used to be > 3
-        # diff = np.nan
+        if (diff < 0.2) or (diff > 18):  # Used to be > 3 for diff = model - ref
+            diff = np.nan
         if len(self.mag_times) == 0:
             self.mag_times.append(now)
             self.mags.append(diff)

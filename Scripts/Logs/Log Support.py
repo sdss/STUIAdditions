@@ -36,7 +36,7 @@ import time
 import RO.Wdg
 import TUI.Models
 
-__version__ = '3.0.2'
+__version__ = '3.0.3'
 
 
 # noinspection PyPep8Naming
@@ -151,8 +151,8 @@ class ScriptClass(object, ):
         # self.bossModel.exposureState.addCallback(self.updateBossState,
         #                                          callNow=True)
         self.apogeeState = self.apogeeModel.exposureWroteSummary[0]
-        self.apogeeModel.exposureWroteSummary.addCallback(
-            self.updateApogeeExpos, callNow=True)
+        # self.apogeeModel.exposureWroteSummary.addCallback(
+        #     self.updateApogeeExpos, callNow=True)
         self.apogeeBossState = None
 
         self.startHartmannCollimate = None

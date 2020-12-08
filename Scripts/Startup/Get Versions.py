@@ -149,14 +149,18 @@ class ScriptClass(object):
         # self.logWdg.addMsg("  -- Other software", tags=["g","cur"])
         procVer = defVal
 
-        vPath = "/Library/Application Support/STUIAdditions/Scripts/APO-local/version.txt"
-        if os.path.isfile(vPath):
-            vFile = open(vPath, "r");
-            scrVer = vFile.read();
-            vFile.close()
+        stuiadditions_path = ('/'.join(os.path.abspath(
+            __file__).split('/')[:-3]))
+        if os.path.exists(stuiadditions_path):
+            os.chdir(stuiadditions_path)
+            t = os.popen('git status')
+            try:
+                branch = t.readlines()[0].split()[-1]
+            except ValueError:
+                branch = 'not available'
         else:
-            scrVer = "not availble"
-        self.getVer1Print("APO-local", scrVer, "")
+            branch = "not availble"
+        self.getVer1Print("STUIAdditions", branch, "")
 
     def end(self, sr):
         self.logWdg.addMsg("  -- done --", tags=["g", "cur"])
