@@ -17,13 +17,14 @@ import numpy as np
 import TUI.Base.StripChartWdg
 import TUI.Models
 
-__version__ = '3.0.1'
+__version__ = '3.0.2'
 
 
 class ScriptClass(object):
     def __init__(self, sr):
         print('===Guide Monitor 2 Version {}==='.format(__version__))
         sr.debug = False
+        self.sr = sr
         sr.master.winfo_toplevel().wm_resizable(True, True)
         self.guider_model = TUI.Models.getModel('guider')
         self.tcc_model = TUI.Models.getModel('tcc')
@@ -120,12 +121,13 @@ class ScriptClass(object):
         """
         model = self.guider_model.probe[8]
         ref = self.guider_model.probe[9]
-        print('Guider ref magnitude: {}'.format(ref))
+        if self.sr.debug:
+            print('Guider ref magnitude: {}'.format(ref))
         # diff = model - 2.5 * 10**ref
         diff = model
         now = datetime.datetime.now()
-        # if (diff < 0) or (diff > 18):  # Used to be > 3
-        # diff = np.nan
+        if (diff < 0.2) or (diff > 18):  # Used to be > 3 for diff = model - ref
+            diff = np.nan
         if len(self.mag_times) == 0:
             self.mag_times.append(now)
             self.mags.append(diff)

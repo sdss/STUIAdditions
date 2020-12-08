@@ -36,3 +36,14 @@
  them if we need them, but they're no longer cluttering
  
 - Reformatted some files
+
+# [3.1.2] - 2020-12-08
+
+### Changes
+
+- Get Versions.py now shows the git version of STUIAdditions
+
+- Timer.py works for MWM plates
+
+- Many prints in Guide Monitor 2 and Timer were moved inside sr.debug if
+ statements

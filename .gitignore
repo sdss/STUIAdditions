@@ -1,5 +1,6 @@
 *.pyc
 *.iml
+.idea/
 *Project_Default.xml
 *workspace.xml
 *.swp
