@@ -375,7 +375,8 @@ class ScriptClass(object):
             self.logWdg.text.tag_config("l", foreground="blue")
             self.logWdg.text.tag_config("br", foreground="brown")
             if expState == "IDLE":
-                self.logWdg.addMsg("%s  boss Idle" % timeStr, tags="b")
+                pass
+                # self.logWdg.addMsg("%s  boss Idle" % timeStr, tags="b")
             elif expState == "INTEGRATING":
                 ss = "%s  boss exposure %6.1f, file=%i" % (
                     timeStr, expTime, expId)
