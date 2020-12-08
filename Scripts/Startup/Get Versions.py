@@ -1,16 +1,18 @@
-''' Get  versions of operational software
+""" Get  versions of operational software
 
  06/09/2010  Added defVal variable to check if fail
    changed format of output from "actor --- ver " to "actor: ver"
 08/20/2010 changed server name for sdssProcedure
 05/16/2011  resizable window
 02/06/2013  refinement
-08/21/2013  EM: changed script local library name, check is version file exist   
+08/21/2013  EM: changed script local library name, check is version file exist
 08/29/2013  EM: changed script local library name to APO-local
-03/27/2014  EM: added blue color for branch, trunk  for magenta;  format for table 
-09/26/2014  EM: deleted sos and sos.idlspec2d versions; added hurtmann.verson 
-10/08/2015  EM: deleted sdssProcedures version as we keep wikki and had STUI hand with HTTP
-'''
+03/27/2014  EM: added blue color for branch, trunk  for magenta;  format for
+ table
+09/26/2014  EM: deleted sos and sos.idlspec2d versions; added hurtmann.verson
+10/08/2015  EM: deleted sdssProcedures version as we keep wikki and had STUI
+ hand with HTTP
+"""
 
 import os
 from datetime import datetime
@@ -45,7 +47,8 @@ class ScriptClass(object):
         self.logWdg.text.tag_config("branch", foreground="blue")
         self.logWdg.text.tag_config("trunk", foreground="magenta")
 
-    #        fidCrossKeyVar = getattr(self.mcpModel, "%sFiducialCrossing" % (axisName.lower()))
+    #        fidCrossKeyVar = getattr(self.mcpModel, "%sFiducialCrossing"
+    #        % (axisName.lower()))
     #        def fidCrossCallFunc(fidCrossKeyVar, axisName=axisName):
     #                self.axisFiducialCrossingCallback(axisName, fidCrossKeyVar)
     #        fidCrossKeyVar.addCallback(fidCrossCallFunc, callNow=False)
@@ -57,10 +60,10 @@ class ScriptClass(object):
         if "branch" in ver: tags.append("branch")
         if "trunk" in ver:  tags.append("trunk")
         if defVal == ver:
-            self.logWdg.addMsg("%s" % (ss), severity=RO.Constants.sevError,
+            self.logWdg.addMsg("%s" % ss, severity=RO.Constants.sevError,
                                tags=tags)
         else:
-            self.logWdg.addMsg("%s" % (ss), tags=tags)
+            self.logWdg.addMsg("%s" % ss, tags=tags)
 
     def getVer1(self, act, defVal="FAILED"):
         sr = self.sr
@@ -81,7 +84,8 @@ class ScriptClass(object):
         #    tuiModel = TUI.Models.getModel("tui")
         #    conn=tuiModel.getConnection()
         #    if conn:
-        #         self.logWdg.addMsg("    STUI is not connected", severity=self.redWarn)
+        #         self.logWdg.addMsg("    STUI is not connected",
+        #         severity=self.redWarn)
         #         defVal="  n/a"
 
         self.getVer1("alerts")
@@ -106,13 +110,13 @@ class ScriptClass(object):
         mcpPlc = sr.getKeyVar(mcpModel.plcVersion, ind=0, defVal=defVal)
         self.getVer1Print("-mcp.plc", str(mcpPlc), defVal)
 
-        self.getVer1Print("-mcp.azFiducialVersion", \
+        self.getVer1Print("-mcp.azFiducialVersion",
                           sr.getKeyVar(mcpModel.azFiducialVersion, ind=0,
                                        defVal=defVal), defVal)
-        self.getVer1Print("-mcp.altFiducialVersion", \
+        self.getVer1Print("-mcp.altFiducialVersion",
                           sr.getKeyVar(mcpModel.altFiducialVersion, ind=0,
                                        defVal=defVal), defVal)
-        self.getVer1Print("-mcp.rotFiducialVersion", \
+        self.getVer1Print("-mcp.rotFiducialVersion",
                           sr.getKeyVar(mcpModel.rotFiducialVersion, ind=0,
                                        defVal=defVal), defVal)
 
@@ -147,7 +151,6 @@ class ScriptClass(object):
         self.getVer1("apogeeql")
 
         # self.logWdg.addMsg("  -- Other software", tags=["g","cur"])
-        procVer = defVal
 
         stuiadditions_path = ('/'.join(os.path.abspath(
             __file__).split('/')[:-3]))

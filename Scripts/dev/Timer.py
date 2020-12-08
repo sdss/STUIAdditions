@@ -67,6 +67,7 @@ class ScriptClass(object):
         self.minAlert = 5.
         self.remaining_time = None
         self.total_time = None
+        self.exp_t_passd = None
         self.alert = True
         self.call_func = 'Timer'
         self.timer = RO.Comm.Generic.Timer()
@@ -222,7 +223,7 @@ class ScriptClass(object):
                     if self.checkWdg.getBool():
                         self.soundPlayer.play()
                         self.soundPlayer.play()
-                        self.alert = False
+                    self.alert = False
             else:
                 fgInd = 0
             self.label_wdg.config(fg=self.fgList[fgInd])
@@ -235,4 +236,3 @@ class ScriptClass(object):
 
     def end(self, sr):
         self.timer.cancel()
-
