@@ -67,9 +67,10 @@ class ScriptClass(object):
         self.minAlert = 5.
         self.remaining_time = None
         self.total_time = None
-        self.exp_t_passd = None
+        self.exp_t_passed = None
         self.alert = True
         self.call_func = 'Timer'
+        self.callback = None
         self.timer = RO.Comm.Generic.Timer()
         self.wait = 1
         # self.fooTimer.start(self.wait, foo) # schedule self again
@@ -94,6 +95,7 @@ class ScriptClass(object):
     def calc_apogee_science_time(self, keyVar):
         if self.sr.debug:
             print('timer survey: {}'.format(self.sop.survey[1]))
+        self.callback = 'APOGEE utrRead'
         if 'APOGEE-2' in self.sop.survey[0]:
             remaining_pairs = (self.sop.doApogeeScience_index[1]
                                - self.sop.doApogeeScience_index[0])
@@ -106,70 +108,20 @@ class ScriptClass(object):
             self.remaining_time = (remaining_pairs * pair_time
                                    - self.exp_t_passed)
             self.total_time = self.sop.doApogeeScience_index[1] * pair_time
-            self.timer_bar.setValue(newValue=self.remaining_time / 60, newMin=0,
-                                    newMax=self.total_time / 60)
             self.call_func = self.sop.survey[1]
             if self.sr.debug:
-                print('APOGEE Science (APOGEE utrRead) timer callback,'
+                print('{} ({}) timer callback,'
                       ' Remaining pairs: {}'
                       ' Pair time: {}'
-                      ' Progress: {} / {}'.format(remaining_pairs, pair_time,
+                      ' Progress: {} / {}'.format(self.call_func, self.callback,
+                                                  remaining_pairs, pair_time,
                                                   self.remaining_time,
                                                   self.total_time))
-        elif 'BHM lead' in self.sop.survey[1]:
-            remaining_exps = (self.sop.doApogeeBossScience_nExposures[1]
-                              - self.sop.doApogeeBossScience_nExposures[0])
-            total_exps = self.sop.doApogeeBossScience_nExposures[1]
-            dither_count = self.sop.apogeeDitherSet[1]
-            exp_time = np.max(self.sop.doBossScience_expTime) + 60
-            dither_time = np.max(self.sop.doApogeeScience_expTime)
+        else:  # SDSS-V
+            self.calc_apogee_boss_science_time(keyVar)
 
-            self.exp_t_passed = (self.sop.doApogeeBossScience_nExposures[0]
-                                 * exp_time
-                                 + dither_count * dither_time
-                                 + self.apogee.utrReadState[2] *
-                                 self.apogee.utrReadTime[0])
-            self.remaining_time = total_exps * exp_time - self.exp_t_passed
-            self.total_time = (self.sop.doApogeeBossScience_nExposures[1]
-                               * exp_time)
-            self.timer_bar.setValue(newValue=self.remaining_time / 60, newMin=0,
-                                    newMax=self.total_time / 60)
-            self.call_func = self.sop.survey[1]
-            if self.sr.debug:
-                print('BHM Lead (APOGEE utrRead) timer callback,'
-                      ' Remaining exps: {}'
-                      ' Exp time: {}'
-                      ' Progress: {} / {}'.format(remaining_exps, exp_time,
-                                                  self.remaining_time,
-                                                  self.total_time))
-        elif 'MWM lead' in self.sop.survey[1]:
-            remaining_exps = (self.sop.doApogeeBossScience_nExposures[1]
-                              - self.sop.doApogeeBossScience_nExposures[0])
-            total_exps = self.sop.doApogeeBossScience_nExposures[1]
-            dither_count = self.sop.apogeeDitherSet[1]
-            exp_time = np.max(self.sop.doBossScience_expTime) + 60
-            dither_time = np.max(self.sop.doApogeeScience_expTime)
-
-            self.exp_t_passed = (self.sop.doApogeeBossScience_nExposures[0]
-                                 * exp_time
-                                 + dither_count * dither_time
-                                 + self.apogee.utrReadState[2] *
-                                 self.apogee.utrReadTime[0])
-            self.remaining_time = total_exps * exp_time - self.exp_t_passed
-            self.total_time = (self.sop.doApogeeBossScience_nExposures[1]
-                               * exp_time)
-            
-            self.call_func = self.sop.survey[1]
-            if self.sr.debug:
-                print('MWM Lead (APOGEE utrRead) timer callback,'
-                      ' Remaining exps: {}'
-                      ' Exp time: {}'
-                      ' Progress: {} / {}'.format(remaining_exps, exp_time,
-                                                  self.remaining_time,
-                                                  self.total_time))
-            self.timer_bar.setValue(newValue=self.remaining_time / 60, newMin=0,
-                                    newMax=self.total_time / 60)
-
+        self.timer_bar.setValue(newValue=self.remaining_time / 60, newMin=0,
+                                newMax=self.total_time / 60)
         self.set_timer()
 
     def calc_apogee_boss_science_time(self, keyVar):
@@ -177,8 +129,19 @@ class ScriptClass(object):
                           - self.sop.doApogeeBossScience_nExposures[0])
         total_exps = self.sop.doApogeeBossScience_nExposures[1]
         dither_count = self.sop.apogeeDitherSet[1]
-        exp_time = np.max(self.sop.doBossScience_expTime) + 60
         dither_time = np.max(self.sop.doApogeeScience_expTime)
+
+        if 'BHM lead' in self.sop.survey[1]:
+            # The fudge factor is for readout + time where APOGEE is still
+            # exposing after BOSS is done. It has been tested and found to be
+            # very accurate for long BHM sets.
+            exp_time = np.max(self.sop.doBossScience_expTime) + 106.6
+
+        elif 'MWM lead' in self.sop.survey[1]:
+
+            exp_time = np.max(self.sop.doBossScience_expTime) + 124.5
+        else:
+            exp_time = np.nan
 
         self.exp_t_passed = (self.sop.doApogeeBossScience_nExposures[0]
                              * exp_time
@@ -188,17 +151,19 @@ class ScriptClass(object):
         self.remaining_time = total_exps * exp_time - self.exp_t_passed
         self.total_time = (self.sop.doApogeeBossScience_nExposures[1]
                            * exp_time)
-        self.timer_bar.setValue(newValue=self.remaining_time / 60, newMin=0,
-                                newMax=self.total_time / 60)
+
         self.call_func = self.sop.survey[1]
         if self.sr.debug:
-            print('{} (APOGEE utrRead) timer callback,'
+            print('{} ({}) timer callback,'
                   ' Remaining exps: {}'
                   ' Exp time: {}'
-                  ' Progress: {} / {}'.format(self.call_func, remaining_exps,
-                                              exp_time,
+                  ' Progress: {} / {}'.format(self.call_func, self.callback,
+                                              remaining_exps, exp_time,
                                               self.remaining_time,
                                               self.total_time))
+
+        self.timer_bar.setValue(newValue=self.remaining_time / 60, newMin=0,
+                                newMax=self.total_time / 60)
         self.set_timer()
 
     def set_timer(self):
@@ -213,7 +178,7 @@ class ScriptClass(object):
         else:
             min_left = self.remaining_time / 60.0
             self.label_wdg.set("{}: {:6.0f} min".format(
-                self.call_func, self.total_time/60))
+                self.call_func, self.total_time / 60))
             if min_left > self.minAlert:
                 fgInd = 1
                 self.alert = True
@@ -230,6 +195,7 @@ class ScriptClass(object):
             self.timer_bar.setValue(newValue=min_left)
             # schedule self again
             self.timer.start(self.wait, self.set_timer)
+        self.callback = None
 
     def run(self, sr):
         pass
