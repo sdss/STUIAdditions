@@ -119,9 +119,9 @@ class ScriptClass(object):
                                                   self.total_time))
         else:  # SDSS-V
             self.calc_apogee_boss_science_time(keyVar)
-
-        self.timer_bar.setValue(newValue=self.remaining_time / 60, newMin=0,
-                                newMax=self.total_time / 60)
+        if (self.remaining_time is not None) and (self.total_time is not None):
+            self.timer_bar.setValue(newValue=self.remaining_time / 60, newMin=0,
+                                    newMax=self.total_time / 60)
         self.set_timer()
 
     def calc_apogee_boss_science_time(self, keyVar):
@@ -132,22 +132,25 @@ class ScriptClass(object):
         dither_time = np.max(self.sop.doApogeeScience_expTime)
 
         if 'BHM lead' in self.sop.survey[1]:
-            # The fudge factor is for readout + time where APOGEE is still
+            # The fudge factor is for things like BOSS readout + time where
+            # APOGEE is still
             # exposing after BOSS is done. It has been tested and found to be
-            # very accurate for long BHM sets.
-            exp_time = np.max(self.sop.doBossScience_expTime) + 106.6
+            # accurate within 6 seconds for long MWM sequences
+            exp_time = np.max(self.sop.doBossScience_expTime) + 100.6
 
         elif 'MWM lead' in self.sop.survey[1]:
 
             exp_time = np.max(self.sop.doBossScience_expTime) + 124.5
         else:
-            exp_time = np.nan
-
-        self.exp_t_passed = (self.sop.doApogeeBossScience_nExposures[0]
-                             * exp_time
-                             + dither_count * dither_time
-                             + self.apogee.utrReadState[2] *
-                             self.apogee.utrReadTime[0])
+            return
+        try:
+            self.exp_t_passed = (self.sop.doApogeeBossScience_nExposures[0]
+                                 * exp_time
+                                 + dither_count * dither_time
+                                 + self.apogee.utrReadState[2] *
+                                 self.apogee.utrReadTime[0])
+        except TypeError:  # If something is still None, don't try to time yet
+            return
         self.remaining_time = total_exps * exp_time - self.exp_t_passed
         self.total_time = (self.sop.doApogeeBossScience_nExposures[1]
                            * exp_time)
@@ -161,9 +164,9 @@ class ScriptClass(object):
                                               remaining_exps, exp_time,
                                               self.remaining_time,
                                               self.total_time))
-
-        self.timer_bar.setValue(newValue=self.remaining_time / 60, newMin=0,
-                                newMax=self.total_time / 60)
+        if (self.remaining_time is not None) and (self.total_time is not None):
+            self.timer_bar.setValue(newValue=self.remaining_time / 60, newMin=0,
+                                    newMax=self.total_time / 60)
         self.set_timer()
 
     def set_timer(self):

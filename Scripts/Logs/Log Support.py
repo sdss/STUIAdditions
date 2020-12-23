@@ -36,7 +36,7 @@ import time
 import RO.Wdg
 import TUI.Models
 
-__version__ = '3.0.3'
+__version__ = '3.0.3-dev'
 
 
 # noinspection PyPep8Naming
@@ -185,11 +185,11 @@ class ScriptClass(object, ):
         self.manga_seq_i = self.sopModel.doMangaSequence_ditherSeq[1]
         self.ap_manga_seq_i = self.sopModel.doApogeeMangaSequence_ditherSeq[1]
         # If MaNGA is leading, this will be called
-        self.sopModel.doMangaSequence_ditherSeq.addCallback(
-            self.updateMangaState, callNow=True)
+        # self.sopModel.doMangaSequence_ditherSeq.addCallback(
+        #     self.updateMangaState, callNow=True)
         # If MaNGA is not leading, this will be called
-        self.sopModel.doApogeeMangaSequence_ditherSeq.addCallback(
-            self.updateApogeeMangaState, callNow=True)
+        # self.sopModel.doApogeeMangaSequence_ditherSeq.addCallback(
+        #     self.updateApogeeMangaState, callNow=True)
 
         self.sopModel.doApogeeBossScience_nExposures.addCallback(
             self.updateApogeeBossState, callNow=True)
@@ -478,9 +478,9 @@ class ScriptClass(object, ):
                                              float(calibOff1),
                                              float(calibOff2))
         self.logWdg1.addMsg('{:>5} {:<9} {:>6.1f} {:>4.1f} {:>6.1f} {:<13}'
-                            ' {:>8.1f} {:<10} {:>8.3f}'
+                            ' {:>8.1f} {:<10} {:>8.3f} {}'
                             ''.format(tm, cart, az, alt, rot, objOffs,
-                                      guideOff2, calibOffs, guideRMS
+                                      guideOff2, calibOffs, guideRMS, atm
                                       ), tags=["b", "cur"])
 
         # focus

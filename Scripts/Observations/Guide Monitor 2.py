@@ -13,9 +13,11 @@ History:
 import datetime
 import matplotlib as mpl
 import numpy as np
+import Tkinter as tk
 
 import TUI.Base.StripChartWdg
 import TUI.Models
+import RO.Wdg
 
 __version__ = '3.0.2'
 
@@ -25,27 +27,33 @@ class ScriptClass(object):
         print('===Guide Monitor 2 Version {}==='.format(__version__))
         sr.debug = False
         self.sr = sr
+        frame = tk.Frame(sr.master)
         sr.master.winfo_toplevel().wm_resizable(True, True)
         self.guider_model = TUI.Models.getModel('guider')
         self.tcc_model = TUI.Models.getModel('tcc')
-
+        frame.grid(row=0, column=0, sticky='nw')
         time_range = 1800
         width = 8
         height = 9
         self.plot_widget = TUI.Base.StripChartWdg.StripChartWdg(
-            master=sr.master, timeRange=time_range, numSubplots=4, width=width,
-            height=height, cnvTimeFunc=TUI.Base.StripChartWdg.TimeConverter(
+            master=frame, timeRange=time_range, numSubplots=4, width=width,
+            height=height-0.2, cnvTimeFunc=TUI.Base.StripChartWdg.TimeConverter(
                 useUTC=True))
-        self.plot_widget.grid(row=0, column=0, sticky='nwes')
+        self.plot_widget.grid(row=0, column=0, sticky='nw')
         self.plot_widget.grid_rowconfigure(0, weight=1)
         self.plot_widget.grid_columnconfigure(0, weight=1)
 
         self.plot_widget.xaxis.set_major_locator(mpl.dates.MinuteLocator(
             byminute=range(0, 61, 5)))
+        self.plot_widget.figure.tight_layout(rect=[0.05, 0, 1, 0.95])
+        frame.grid(row=1, column=0, sticky='sw')
+        self.seeing_autoscale = RO.Wdg.Checkbutton(
+            master=frame, text="Autoscale Seeing", defValue=True,
+            helpText='Lets matplotlib set seeing scales, otherwise fixed', )
 
         # Callback
 
-        # Focus Error"
+        # Focus Error
         self.plot_widget.setYLimits(-150, 150, subplotInd=0)
         self.plot_widget.plotKeyVar(subplotInd=0,
                                     keyVar=self.guider_model.focusError,
@@ -55,6 +63,7 @@ class ScriptClass(object):
         self.plot_widget.addConstantLine(0, subplotInd=0, c='gray')
         self.plot_widget.subplotArr[0].yaxis.set_label_text('Focus Error')
 
+        # Scale Error
         self.plot_widget.setYLimits(-60, 60, subplotInd=1)
         self.plot_widget.plotKeyVar(subplotInd=1, keyInd=0,
                                     func=self.scaleConvert,
@@ -65,7 +74,7 @@ class ScriptClass(object):
         self.plot_widget.addConstantLine(0, subplotInd=1, c='gray')
 
         # Seeing
-        self.plot_widget.setYLimits(0, 3, subplotInd=2)
+        self.plot_widget.setYLimits(0.5, 2.5, subplotInd=2)
         self.plot_widget.plotKeyVar(subplotInd=2, keyInd=0, color='orange',
                                     keyVar=self.guider_model.seeing,
                                     label='Seeing')
@@ -80,6 +89,7 @@ class ScriptClass(object):
                                     c='g')
         # self.plot_widget.subplotArr[3].yaxis.set_label_text(r'$\Delta m$')
         self.plot_widget.subplotArr[3].yaxis.set_label_text('m')
+        self.plot_widget.subplotArr[3].invert_yaxis()
         # self.plot_widget.addConstantLine(0, subplotInd=3, c='k')
         # self.plot_widget.addConstantLine(100, subplotInd=0, c='k')
 
