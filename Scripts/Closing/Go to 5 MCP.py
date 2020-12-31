@@ -204,7 +204,7 @@ class ScriptClass(object):
                                  ''.format(self.altDes))
 
         self.prnMsg("%s  Start the move to %s " % (tm, self.altDes))
-        print(self.altDes)
+        # print(self.altDes)
 
         # is alt brakes?  
         if self.ifBrakesOn():

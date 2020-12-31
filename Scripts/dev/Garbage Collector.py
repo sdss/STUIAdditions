@@ -7,7 +7,6 @@ class ScriptClass(object, ):
         print('Garbage:')
         pprint.pprint(gc.garbage)
 
-    @staticmethod
-    def run(sr):
+    def run(self, sr):
         gc.collect()
         pprint.pprint(gc.garbage)

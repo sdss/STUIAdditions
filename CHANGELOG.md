@@ -47,3 +47,23 @@
 
 - Many prints in Guide Monitor 2 and Timer were moved inside sr.debug if
  statements
+
+# [3.1.3] - 2020-12-30
+
+### Changes
+
+- Timer.py has a fudge factor adjusted for the overhead on each cart
+
+- Fixed a bug that prevented Fiducial Monitor from playing its sound
+
+- Log Support callbacks are now APOGEE-read based and only write if one hasn't
+ been written in 12 minutes (dt can be adjusted)
+  
+- Axis Error scripts were refactored for consistent naming
+
+- Guide Monitor 2 wastes less space and has some fatty chunks of code removed
+
+- Some old prints were commented or moved to sr.debug ifs
+
+- FluxMonitorWindow was removed, the usefulness of a non-script STUI extension
+ was completely lost to me.

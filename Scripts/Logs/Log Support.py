@@ -28,6 +28,9 @@ some day in the past:  added 4th window for hartmann output.
 2020-06-29 DG: Put any int/float conversion inside a ValueError try except in
     case STUI returns n/a, and np.nan is used instead. Also right justified
     numbers
+2020-12-29 DG: Disabled all callbacks except APOGEE exposures, added a new
+    criteria in the callbacks that there hasn't been another callback recently
+    and the enclosure is open.
 """
 
 import numpy as np
@@ -36,7 +39,7 @@ import time
 import RO.Wdg
 import TUI.Models
 
-__version__ = '3.0.3'
+__version__ = '3.0.4-dev'
 
 
 # noinspection PyPep8Naming
@@ -87,7 +90,7 @@ class ScriptClass(object, ):
         # stui models
         self.tccModel = TUI.Models.getModel("tcc")
         self.guiderModel = TUI.Models.getModel("guider")
-        self.apoModel = TUI.Models.getModel("apo")
+        self.apo_model = TUI.Models.getModel("apo")
         self.apogeeModel = TUI.Models.getModel("apogee")
         self.cmdsModel = TUI.Models.getModel("cmds")
         self.hartmannModel = TUI.Models.getModel("hartmann")
@@ -151,9 +154,10 @@ class ScriptClass(object, ):
         # self.bossModel.exposureState.addCallback(self.updateBossState,
         #                                          callNow=True)
         self.apogeeState = self.apogeeModel.exposureWroteSummary[0]
-        # self.apogeeModel.exposureWroteSummary.addCallback(
-        #     self.updateApogeeExpos, callNow=True)
+        self.last_call = time.time()
+
         self.apogeeBossState = None
+        self.dt = 0
 
         self.startHartmannCollimate = None
         self.cmdsModel.CmdQueued.addCallback(self.hartStart, callNow=False)
@@ -179,20 +183,22 @@ class ScriptClass(object, ):
                                                     callNow=False)
         # self.hartmannModel.sp2Residuals.addCallback(self.sp2ResidualsFun,
         #                                             callNow=False)
-
         self.sopModel = TUI.Models.getModel('sop')
         # Inits a variable used later
         self.manga_seq_i = self.sopModel.doMangaSequence_ditherSeq[1]
         self.ap_manga_seq_i = self.sopModel.doApogeeMangaSequence_ditherSeq[1]
         # If MaNGA is leading, this will be called
-        self.sopModel.doMangaSequence_ditherSeq.addCallback(
-            self.updateMangaState, callNow=True)
+        # self.sopModel.doMangaSequence_ditherSeq.addCallback(
+        #     self.updateMangaState, callNow=True)
         # If MaNGA is not leading, this will be called
-        self.sopModel.doApogeeMangaSequence_ditherSeq.addCallback(
-            self.updateApogeeMangaState, callNow=True)
-
-        self.sopModel.doApogeeBossScience_nExposures.addCallback(
-            self.updateApogeeBossState, callNow=True)
+        # self.sopModel.doApogeeMangaSequence_ditherSeq.addCallback(
+        #     self.updateApogeeMangaState, callNow=True)
+        # SDSS-V sequences
+        # self.sopModel.doApogeeBossScience_nExposures.addCallback(
+        #     self.updateApogeeBossState, callNow=True)
+        # APOGEE exposure saved (47/94/45 reads)
+        self.apogeeModel.exposureWroteSummary.addCallback(
+            self.updateApogeeExpos, callNow=True)
 
     def r1PistonMoveFun(self, keyVar):
         if not keyVar.isGenuine:
@@ -269,22 +275,30 @@ class ScriptClass(object, ):
                             tags=["cur", "c"])
 
     def updateApogeeBossState(self, keyVar):
-        if not keyVar.isGenuine:
+        t = time.time()
+        dt = t - self.last_call
+        if (not keyVar.isGenuine) or ((dt / 60) < 5):
             return
+        self.dt = dt
+        self.last_call = t
         if keyVar[0] != self.apogeeBossState:
             sr = self.sr
             self.record(sr, 'ApogeeBoss')
             self.apogeeBossState = keyVar[0]
 
     def updateApogeeExpos(self, keyVar):
-        if not keyVar.isGenuine:
+        t = time.time()
+        dt = t - self.last_call
+        if ((not keyVar.isGenuine) or ((dt / 60) < 12)
+                or (self.apo_model.encl25m[0] <= 0)):
             return
+        self.dt = dt
+        self.last_call = t
         if keyVar[0] != self.apogeeState:
             sr = self.sr
-            dd3 = self.apogeeModel.utrReadState[3]
-            if (dd3 == 47) or (dd3 == 94):
-                self.record(sr, "APOGEE")
-                self.apogeeState = keyVar[0]
+            # if (dd3 == 47) or (dd3 == 94):
+            self.record(sr, "APOGEE")
+            self.apogeeState = keyVar[0]
 
     # Some old code we do not need
     # def updateBossState(self, keyVar):
@@ -297,16 +311,23 @@ class ScriptClass(object, ):
     #         self.expState = keyVar[0]
 
     def updateMangaState(self, keyVar):
-        if not keyVar.isGenuine:
+        t = time.time()
+        dt = t - self.last_call
+        if (not keyVar.isGenuine) or ((dt / 60) < 5):
             return
+        self.dt = dt
+        self.last_call = t
         if keyVar[1] != self.manga_seq_i:
             sr = self.sr
             self.record(sr, "MaNGA")
             self.manga_seq_i = keyVar[1]
 
     def updateApogeeMangaState(self, keyVar):
-        if not keyVar.isGenuine:
+        t = time.time()
+        self.dt = t - self.last_call
+        if (not keyVar.isGenuine) or ((self.dt / 60) < 5):
             return
+        self.last_call = t
         if keyVar[1] != self.ap_manga_seq_i:
             sr = self.sr
             self.record(sr, "MaStar")
@@ -334,7 +355,8 @@ class ScriptClass(object, ):
         return str(int(val)).rjust(num, " ")
 
     def record(self, sr, atm):
-        print('Log Support callback: {}'.format(atm))
+        if self.sr.debug:
+            print('Log Support callback: {}'.format(atm))
         tm = self.getTAITimeStr()
         try:
             scale = float(sr.getKeyVar(self.tccModel.scaleFac, ind=0,
@@ -440,37 +462,37 @@ class ScriptClass(object, ):
             guideRMS = np.nan
         try:
             airT = float(
-                sr.getKeyVar(self.apoModel.airTempPT, ind=0, defVal=-99))
+                sr.getKeyVar(self.apo_model.airTempPT, ind=0, defVal=-99))
         except ValueError:
             airT = np.nan
         try:
-            direc = int(sr.getKeyVar(self.apoModel.windd, ind=0, defVal=-99))
+            direc = int(sr.getKeyVar(self.apo_model.windd, ind=0, defVal=-99))
         except ValueError:
             direc = np.nan
         try:
-            wind = int(sr.getKeyVar(self.apoModel.winds, ind=0, defVal=99))
+            wind = int(sr.getKeyVar(self.apo_model.winds, ind=0, defVal=99))
         except ValueError:
             wind = np.nan
         try:
-            dp = sr.getKeyVar(self.apoModel.dpTempPT, ind=0, defVal=-99)
+            dp = sr.getKeyVar(self.apo_model.dpTempPT, ind=0, defVal=-99)
         except ValueError:
             dp = np.nan
         try:
-            humid = int(sr.getKeyVar(self.apoModel.humidPT, ind=0, defVal=999))
+            humid = int(sr.getKeyVar(self.apo_model.humidPT, ind=0, defVal=999))
         except ValueError:
             humid = np.nan
         try:
-            dustb = int(sr.getKeyVar(self.apoModel.dustb, ind=0, defVal=9999))
+            dustb = int(sr.getKeyVar(self.apo_model.dustb, ind=0, defVal=9999))
         except ValueError:
             dustb = np.nan
         #   dustb="%5s" % (sr.getKeyVar(self.apoModel.dustb, ind=0,
         #   defVal="n/a"))
 
-        irsc = sr.getKeyVar(self.apoModel.irscsd, ind=0, defVal=999)
-        irscmean = sr.getKeyVar(self.apoModel.irscmean, ind=0, defVal=999)
+        irsc = sr.getKeyVar(self.apo_model.irscsd, ind=0, defVal=999)
+        irscmean = sr.getKeyVar(self.apo_model.irscmean, ind=0, defVal=999)
 
-        at = sr.getKeyVar(self.apoModel.airTempPT, ind=0, defVal=999)
-        val = sr.getKeyVar(self.apoModel.dpTempPT, ind=0, defVal=999)
+        at = sr.getKeyVar(self.apo_model.airTempPT, ind=0, defVal=999)
+        val = sr.getKeyVar(self.apo_model.dpTempPT, ind=0, defVal=999)
         diff = at - val
 
         objOffs = "(%3.1f,%3.1f)" % (float(objOff0), float(objOff1))
@@ -480,7 +502,8 @@ class ScriptClass(object, ):
         self.logWdg1.addMsg('{:>5} {:<9} {:>6.1f} {:>4.1f} {:>6.1f} {:<13}'
                             ' {:>8.1f} {:<10} {:>8.3f}'
                             ''.format(tm, cart, az, alt, rot, objOffs,
-                                      guideOff2, calibOffs, guideRMS
+                                      guideOff2, calibOffs, guideRMS,
+                                      # atm, self.dt  # For debugging callbacks
                                       ), tags=["b", "cur"])
 
         # focus

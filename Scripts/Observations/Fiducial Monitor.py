@@ -137,7 +137,7 @@ class ScriptClass(object):
             ss = "Rot: %s ( > %s)" % (self.largeMes, str(self.rotMax))
 
     @staticmethod
-    def warning(self, ):
+    def warning():
         TUI.PlaySound.fiducialCrossing()
 
     def run(self, sr):
