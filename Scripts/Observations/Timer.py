@@ -136,11 +136,11 @@ class ScriptClass(object):
             # APOGEE is still
             # exposing after BOSS is done. It has been tested and found to be
             # accurate within 6 seconds for long MWM sequences
-            exp_time = np.max(self.sop.doBossScience_expTime) + 100.6
+            exp_time = np.max(self.sop.doBossScience_expTime) + 85
 
         elif 'MWM lead' in self.sop.survey[1]:
 
-            exp_time = np.max(self.sop.doBossScience_expTime) + 124.5
+            exp_time = np.max(self.sop.doBossScience_expTime) + 85
         else:
             return
         try:
