@@ -67,3 +67,10 @@
 
 - FluxMonitorWindow was removed, the usefulness of a non-script STUI extension
  was completely lost to me.
+
+# [3.1.4] - 2021-01-17
+
+### Changes
+
+- Removed a print from an sr.debug condition. The print would produce thousands
+ of lines of output, slowing down STUI.
