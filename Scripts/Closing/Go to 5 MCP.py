@@ -35,7 +35,7 @@ import RO.Astro.Tm
 import RO.Wdg
 import TUI.Models
 
-__version__ = '3.0.1'
+__version__ = '3.0.2'
 
 
 class ScriptClass(object):
@@ -43,7 +43,8 @@ class ScriptClass(object):
         sr.debug = False  # if False, real time run
         #    sr.debug = True  # if True, run in debug-only mode
 
-        self.name = "goto5mcp "
+        self.name = "Go To 5 MCP"
+        print('==={} Version {}==='.format(self.name, __version__))
         self.sr = sr
         sr.master.winfo_toplevel().wm_resizable(True, True)
 
