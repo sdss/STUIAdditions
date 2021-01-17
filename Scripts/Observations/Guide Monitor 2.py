@@ -130,9 +130,8 @@ class ScriptClass(object):
         intended as an alternative to self.model_ref_ratio
         """
         model = self.guider_model.probe[8]
-        ref = self.guider_model.probe[9]
-        if self.sr.debug:
-            print('Guider ref magnitude: {}'.format(ref))
+        # ref = self.guider_model.probe[9]
+        # print('Guider ref magnitude: {}'.format(ref))
         # diff = model - 2.5 * 10**ref
         diff = model
         now = datetime.datetime.now()
