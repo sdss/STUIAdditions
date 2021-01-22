@@ -29,4 +29,6 @@ git clone https://github.com/sdss/STUIAdditions.git
 
 ### Updating
 If at any time changes are made, you can update your local version by running
- `git pull` from the top of the repository.
+ `git pull` from the top of the repository. The `master` branch is usually a
+ safe place to checkout, there are tagged versions, the latest tagged version is
+ usually what's running on the desktops.

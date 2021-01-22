@@ -197,7 +197,7 @@ class ScriptClass(object):
             self.label_wdg.config(fg=self.fgList[fgInd])
             self.timer_bar.setValue(newValue=min_left)
             # schedule self again
-            self.timer.start(self.wait, self.set_timer)
+            # self.timer.start(self.wait, self.set_timer)
         self.callback = None
 
     def run(self, sr):

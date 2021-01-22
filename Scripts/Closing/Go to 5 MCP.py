@@ -15,7 +15,7 @@
     2) changed "mcp alt move 6" to "mcp alt goto_pos_va %s 300000 20000" %
      (self.altDes*3600/0.01400002855);
 02/12/2013  changed condition to stop: stop if go down and elif  pos<
-    (self.altDes+(self.alt-self.altDes)*0.2) and abs(vel)>=abs(velold):
+    (self.altDes+(self.alt-self.altDes)*0.2) and abs(vel)>=abs(vel_old):
 05/17/2013  EM  check host name and rise an error if not telescope laptop
 06/17/2014  EM  changed getBit(self, key, name, val) function for new stui 1.4
 08/19/2014  EM  changed low limit from 6 to 5 degrees after summer shakedown
@@ -25,17 +25,19 @@
 2020-07-09  DG  Moved to new STUIAdditions repository, made some Python 3
     changes and ran it through a linter
 """
-import os
 import socket
 import subprocess as sub
 import time
-import Tkinter as tk
+try:
+    import Tkinter as tk
+except ImportError:
+    import tkinter as tk
 
 import RO.Astro.Tm
 import RO.Wdg
 import TUI.Models
 
-__version__ = '3.0.2'
+__version__ = '3.0.3-dev'
 
 
 class ScriptClass(object):
@@ -130,6 +132,7 @@ class ScriptClass(object):
         self.run3 = True  # mcp alt move
         self.run5 = True  # mcp alt brake.on
         self.run6 = True  # mcp sem_give
+        self.direct = ''
 
     @staticmethod
     def getTAITimeStr():
@@ -210,7 +213,7 @@ class ScriptClass(object):
         # is alt brakes?  
         if self.ifBrakesOn():
             mes = "clear altitude brake and run again"
-            os.popen('say %s ' % mes)  # say mes
+            sub.Popen(['say', mes])  # say mes
             raise sr.ScriptError(mes)
 
         # self.owMcp="(telnet):-1:"
@@ -248,24 +251,24 @@ class ScriptClass(object):
         if abs(self.az - 121.0) >= self.azErr:
             raise sr.ScriptError("tcc: az is not 121,  exit")
 
-            # get the direction of the move, direct=Up,Down, or None
+            # get the self.direction of the move, self.direct=Up,Down, or None
         # from init section -  self.MaxPosErr = 0.01 # alt maximum position
         # error (deg)
         if abs(self.alt - self.altDes) < self.MaxPosErr:
             self.prnMsg(" alt == altDes, exit")
-            os.popen('say %s ' % "telescope at destination, exit")  # say mes
+            sub.Popen(['say', 'telescope at destination, exit'])  # say mes
             # return
             raise sr.ScriptError()
         elif self.altDes > self.alt:
-            direct = "Up"
+            self.direct = "Up"
         elif self.altDes < self.alt:
-            direct = "Down"
+            self.direct = "Down"
         else:
             raise sr.ScriptError("where to go? exit")
         self.prnMsg(
-            "alt=%s  --> altDes=%s,  %s" % (self.alt, self.altDes, direct))
+            "alt=%s  --> altDes=%s,  %s" % (self.alt, self.altDes, self.direct))
 
-        os.popen('say %s ' % ("goto " + str(self.altDes)))  # say mes
+        sub.Popen(['say', "goto {:.0f}".format(self.altDes)])  # say mes
 
         #  Action section 
 
@@ -312,8 +315,8 @@ class ScriptClass(object):
             raise sr.ScriptError("mcp did not get semaphore - failed")
 
             #  move  "mcp alt move %s" % (altDes)
-        dtold = 0
-        velold = 0
+        dt_old = 0
+        vel_old = 0
         startTime = time.time()
         act = "mcp"
         # cmd="alt move %s" % (self.altDes);  
@@ -325,77 +328,31 @@ class ScriptClass(object):
 
         #  watch for moving progress  
         i = 0
+        mes = ''
         while True:
-            yield sr.waitMS(self.timeInt)
+            yield sr.waitMS(self.timeInt)  # 0.4s
             yield sr.waitCmd(actor="tcc", cmdStr="axis status",
                              keyVars=[self.tccModel.altStat,
-                                      self.tccModel.axePos], )
+                                      self.tccModel.axePos], timeLim=2)
             #   pos = self.tccModel.axePos[1]
             #   pos, vel = self.tccModel.altStat[0:2]
             pos, vel = sr.value.getLastKeyVarData(self.tccModel.altStat)[0:2]
             dt = time.time() - startTime
-            nextAlt = pos + vel * (dt - dtold)
+            nextAlt = pos + vel * (dt - dt_old)
 
-            ssPos = "%s,  %5.2f sec,   alt =%5.2f --> %5.2f,  vel=%5.2f" % (
-                i, dt, pos, nextAlt, vel)
-            if i % 2 == 0:
-                ssPos1 = "alt =%5.2f     vel=%5.2f" % (pos, vel)
-                self.prnMsg(ssPos1)
-                sub.Popen(['say', str(int(round(pos)))])
-
-            if abs(pos - self.altDes) < self.MaxPosErr:
-                mes = "moved to destination, brake"
-                self.prnMsg(mes)
+            try:
+                move_stat = self.check_move(i, dt, pos, nextAlt, vel, vel_old)
+            except self.sr.ScriptError as se:
+                print('Go To 5 Error: {}'.format(se))
                 break
 
-            if direct == "Down":
-                if nextAlt < (self.altDes - 0.5):
-                    self.prnMsg(ssPos)
-                    mes = "next move too low - brake"
-                    self.prnMsg(mes)
-                    break
-                elif pos < self.altDes:
-                    self.prnMsg(ssPos)
-                    mes = "moved too low - brake"
-                    self.prnMsg(mes)
-                    break
-                elif pos < self.lowLimit:
-                    self.prnMsg(ssPos)
-                    mes = "alt below %s - brake" % self.lowLimit
-                    self.prnMsg(mes)
-                    break
-                elif (pos < (self.altDes + (self.alt - self.altDes) * 0.2)
-                      and abs(vel) >= abs(velold)):
-                    self.prnMsg(ssPos)
-                    mes = "move did not decelerate, brake"
-                    self.prnMsg(mes)
-                    break
-
-            if self.ifBrakesOn():
-                mes = "alt brake detected,  stop"
-                self.prnMsg(mes)
-                break
-
-            if direct == "Up":
-                if nextAlt > (self.altDes + 0.5):
-                    self.prnMsg(ssPos)
-                    mes = "next move too high - brake"
-                    self.prnMsg(mes)
-                    break
-                elif pos > self.altDes:
-                    self.prnMsg(ssPos)
-                    mes = "moved too high - brake"
-                    self.prnMsg(mes)
-                    break
-
-            if dt > self.TimeLimit:
-                mes = "timeout, brake"
-                self.prnMsg(mes)
+            if move_stat == 0:
+                mes = 'Moved to destination, break'
                 break
 
             i = i + 1
-            dtold = dt
-            velold = vel
+            dt_old = dt
+            vel_old = vel
 
         #  if  semOwn=mcp but alt brake.off, call alt brake.on
         if (self.owMcp in self.semOwner()) and not self.ifBrakesOn():
@@ -404,7 +361,8 @@ class ScriptClass(object):
             self.prnMsg("%s  %s .." % (act, cmd))
             if self.run5:
                 yield sr.waitCmd(actor=act, cmdStr=cmd, checkFail=False)
-        os.popen('say %s ' % mes)  # say mes
+        if mes:
+            sub.Popen(['say', mes])  # say mes
 
         #  if semOwn = mcp, release sem to None
         if self.owMcp in self.semOwner():
@@ -416,9 +374,72 @@ class ScriptClass(object):
 
         yield sr.waitCmd(actor="tcc", cmdStr="axis status",
                          keyVars=[self.tccModel.altStat])
+
         pos, vel = sr.value.getLastKeyVarData(self.tccModel.altStat)[0:2]
         self.prnMsg("final alt = %s,  velocity = %s .." % (pos, vel))
         yield sr.waitCmd(actor="tcc", cmdStr="axis stop")
+
+    def check_move(self, i, dt, pos, nextAlt, vel, vel_old):
+        ssPos = "%s,  %5.2f sec,   alt =%5.2f --> %5.2f,  vel=%5.2f" % (
+            i, dt, pos, nextAlt, vel)
+        if i % 2 == 0:
+            ssPos1 = "alt =%5.2f     vel=%5.2f" % (pos, vel)
+            self.prnMsg(ssPos1)
+            sub.Popen(['say', '{:.0f}'.format(pos)])
+
+        if abs(pos - self.altDes) < self.MaxPosErr:
+            mes = "moved to destination, brake"
+            self.prnMsg(mes)
+            return 0
+
+        if self.direct == "Down":
+            if nextAlt < (self.altDes - 0.5):
+                self.prnMsg(ssPos)
+                mes = "next move too low - brake"
+                self.prnMsg(mes)
+                raise self.sr.ScriptError(mes)
+
+            elif pos < self.altDes:
+                self.prnMsg(ssPos)
+                mes = "moved too low - brake"
+                self.prnMsg(mes)
+                raise self.sr.ScriptError(mes)
+
+            elif pos < self.lowLimit:
+                self.prnMsg(ssPos)
+                mes = "alt below %s - brake" % self.lowLimit
+                self.prnMsg(mes)
+                raise self.sr.ScriptError(mes)
+
+            elif (pos < (self.altDes + (self.alt - self.altDes) * 0.2)
+                  and abs(vel) >= abs(vel_old)):
+                self.prnMsg(ssPos)
+                mes = "move did not decelerate, brake"
+                self.prnMsg(mes)
+                raise self.sr.ScriptError(mes)
+
+        if self.ifBrakesOn():
+            mes = "alt brake detected,  stop"
+            self.prnMsg(mes)
+            raise self.sr.ScriptError(mes)
+
+        if self.direct == "Up":
+            if nextAlt > (self.altDes + 0.5):
+                self.prnMsg(ssPos)
+                mes = "next move too high - brake"
+                self.prnMsg(mes)
+                raise self.sr.ScriptError(mes)
+            elif pos > self.altDes:
+                self.prnMsg(ssPos)
+                mes = "moved too high - brake"
+                self.prnMsg(mes)
+                raise self.sr.ScriptError(mes)
+
+        if dt > self.TimeLimit:
+            mes = "timeout, brake"
+            self.prnMsg(mes)
+            raise self.sr.ScriptError(mes)
+        return 1
 
     def end(self, sr):
         """Clean up"""

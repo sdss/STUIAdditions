@@ -39,7 +39,7 @@ import time
 import RO.Wdg
 import TUI.Models
 
-__version__ = '3.0.5'
+__version__ = '3.0.4-dev'
 
 
 # noinspection PyPep8Naming
@@ -53,7 +53,6 @@ class ScriptClass(object, ):
         print(self.name)
         width = 80
         height = 5
-        self.verbose = False
 
         # resizeable window-1
         sr.master.winfo_toplevel().wm_resizable(True, True)
@@ -112,7 +111,7 @@ class ScriptClass(object, ):
         # title lines
         dashes = "%s" % (width * "=")
 
-        self.logWdg1.addMsg("--- Offsets --- (arcsec) ", tags=["b", "cur"])
+        self.logWdg1.addMsg("--- Offsets --- (arcsec) SOP", tags=["b", "cur"])
         self.logWdg1.addMsg('{:<5} {:<9} {:<6} {:<4} {:<6} {:<13}'
                             ' {:<9} {:<10} {:<8}'
                             ''.format('Time', ' Cart', ' Az', ' Alt', ' Rot',
@@ -198,7 +197,7 @@ class ScriptClass(object, ):
         # self.sopModel.doApogeeBossScience_nExposures.addCallback(
         #     self.updateApogeeBossState, callNow=True)
         # APOGEE exposure saved (47/94/45 reads)
-        self.apogeeModel.exposureWroteSummary.addCallback(
+        self.sopModel.doApogeeBossScience_nExposures.addCallback(
             self.updateApogeeExpos, callNow=True)
 
     def r1PistonMoveFun(self, keyVar):
@@ -356,7 +355,7 @@ class ScriptClass(object, ):
         return str(int(val)).rjust(num, " ")
 
     def record(self, sr, atm):
-        if self.verbose:
+        if self.sr.debug:
             print('Log Support callback: {}'.format(atm))
         tm = self.getTAITimeStr()
         try:
