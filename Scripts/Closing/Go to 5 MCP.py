@@ -37,7 +37,7 @@ import RO.Astro.Tm
 import RO.Wdg
 import TUI.Models
 
-__version__ = '3.0.3-dev'
+__version__ = '3.1.0'
 
 
 class ScriptClass(object):
@@ -133,6 +133,7 @@ class ScriptClass(object):
         self.run5 = True  # mcp alt brake.on
         self.run6 = True  # mcp sem_give
         self.direct = ''
+        self.bypass_pedals = False
 
     @staticmethod
     def getTAITimeStr():
@@ -251,7 +252,23 @@ class ScriptClass(object):
         if abs(self.az - 121.0) >= self.azErr:
             raise sr.ScriptError("tcc: az is not 121,  exit")
 
-            # get the self.direction of the move, self.direct=Up,Down, or None
+        if self.mcpModel.apogeeGang[0] < 12:
+            sub.Popen(["say", "Gang connector not in podium, exit"])
+            raise sr.ScriptError("Gang Connector not in Podium, exit")
+
+        # Checks that pedals are closed. If they aren't in the closed state,
+        # then you can run the script again to bypass this check.
+        if not self.bypass_pedals:
+            for stat in self.mcpModel.ffsStatus:
+                if stat != '01':
+                    sub.Popen(['say', 'Pedals not closed, run again to bypass'])
+                    self.bypass_pedals = True
+                    raise sr.ScriptError('Pedals not closed,'
+                                         ' run again to bypass')
+        else:
+            self.bypass_pedals = False
+
+        # get the self.direction of the move, self.direct=Up,Down, or None
         # from init section -  self.MaxPosErr = 0.01 # alt maximum position
         # error (deg)
         if abs(self.alt - self.altDes) < self.MaxPosErr:
@@ -259,6 +276,7 @@ class ScriptClass(object):
             sub.Popen(['say', 'telescope at destination, exit'])  # say mes
             # return
             raise sr.ScriptError()
+
         elif self.altDes > self.alt:
             self.direct = "Up"
         elif self.altDes < self.alt:
@@ -324,11 +342,13 @@ class ScriptClass(object):
                 self.altDes * 3600. / 0.01400002855)
         self.prnMsg("move-%s  %s .." % (act, cmd))
         if self.run3:
+            yield sr.waitCmd(actor='mcp', cmdStr='alt move')  # Clear any
+            # existing queued moves
             yield sr.waitCmd(actor=act, cmdStr=cmd)
 
         #  watch for moving progress  
         i = 0
-        mes = ''
+        # mes = ''
         while True:
             yield sr.waitMS(self.timeInt)  # 0.4s
             yield sr.waitCmd(actor="tcc", cmdStr="axis status",
@@ -343,10 +363,11 @@ class ScriptClass(object):
             try:
                 move_stat = self.check_move(i, dt, pos, nextAlt, vel, vel_old)
             except self.sr.ScriptError as se:
-                print('Go To 5 Error: {}'.format(se))
-                break
+                print('Go To 5 Error: {}'.format(se.message))
+                sub.Popen(['say', 'se.message'])
+                raise se
 
-            if move_stat == 0:
+            if move_stat == 1:
                 mes = 'Moved to destination, break'
                 break
 
@@ -390,7 +411,7 @@ class ScriptClass(object):
         if abs(pos - self.altDes) < self.MaxPosErr:
             mes = "moved to destination, brake"
             self.prnMsg(mes)
-            return 0
+            return 1
 
         if self.direct == "Down":
             if nextAlt < (self.altDes - 0.5):
@@ -439,7 +460,7 @@ class ScriptClass(object):
             mes = "timeout, brake"
             self.prnMsg(mes)
             raise self.sr.ScriptError(mes)
-        return 1
+        return 0
 
     def end(self, sr):
         """Clean up"""

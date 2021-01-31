@@ -96,6 +96,8 @@ class ScriptClass(object):
         if self.sr.debug:
             print('timer survey: {}'.format(self.sop.survey[1]))
         self.callback = 'APOGEE utrRead'
+        if self.sop.survey is None:
+            return
         if 'APOGEE-2' in self.sop.survey[0]:
             remaining_pairs = (self.sop.doApogeeScience_index[1]
                                - self.sop.doApogeeScience_index[0])
@@ -125,6 +127,8 @@ class ScriptClass(object):
         self.set_timer()
 
     def calc_apogee_boss_science_time(self, keyVar):
+        if self.sop.doApogeeBossScience_nExposures[1] is None:
+            return
         remaining_exps = (self.sop.doApogeeBossScience_nExposures[1]
                           - self.sop.doApogeeBossScience_nExposures[0])
         total_exps = self.sop.doApogeeBossScience_nExposures[1]
